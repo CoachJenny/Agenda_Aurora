@@ -5,7 +5,7 @@ import { S, onDate, ritual, weekPrios, hasAnyData, loadSample, effectiveBlocks }
 import { nowMin, today, mondayOf, weekday } from '../lib/time.js';
 import { esc, toast } from '../lib/ui.js';
 import { render } from '../app.js';
-import { startGuide } from './guide.js';
+import { startGuide, quickLinksHTML, bindQuickLinks } from './guide.js';
 
 const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -55,7 +55,7 @@ export function renderAccueil() {
     if (s.grp) h += `<p class="grouplab">${s.grp}</p>`;
     h += `<button type="button" class="stepc ${s.k === rec ? 'now' : ''}" data-go="${s.k}" style="--hue:${s.hue}"><span class="ico" aria-hidden="true">${s.ic}</span><span>${s.k === rec ? '<span class="nowtag">Maintenant</span><br>' : ''}<span class="tt">${s.t}</span><div class="ss">${s.ss}</div></span><span class="st ${s.ok ? 'ok' : ''}">${s.st}</span></button>`;
   });
-  return h + `</div><div style="margin-top:18px;text-align:center"><button class="link" type="button" id="guideGo2">Mon Aurora : catégories, moments fixes, préférences</button></div>${installCard()}`;
+  return h + `</div><p class="grouplab">Mon Aurora</p><div class="card stack" style="margin-top:10px"><p class="lead" style="margin:0">Tes catégories, tes moments fixes et le reste de ton paramétrage restent modifiables à tout moment.</p>${quickLinksHTML()}</div>${installCard()}`;
 }
 
 export function bindAccueil(v) {
@@ -63,7 +63,7 @@ export function bindAccueil(v) {
   q('#guideGo')?.addEventListener('click', startGuide);
   q('#start')?.addEventListener('click', () => go('plan', { planMode: 'semaine', weekStart: mondayOf(today()) }));
   q('#sample')?.addEventListener('click', () => { loadSample(); render(); toast("Semaine d'exemple chargée"); });
-  q('#guideGo2')?.addEventListener('click', startGuide);
+  bindQuickLinks(v);
   q('#hideInstall')?.addEventListener('click', () => { hideInstall = true; try { localStorage.setItem('aurora-hide-install', '1'); } catch (e) { /* rien */ } render(); });
   v.querySelectorAll('[data-go]').forEach(b => b.onclick = () => {
     const k = b.dataset.go, d = today();

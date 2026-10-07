@@ -8,6 +8,7 @@ import { DAYS, DAYS_L, today, mondayOf, weekDates, addDays, dayNum, weekLabel } 
 import { esc } from '../lib/ui.js';
 import { prioMirror, bindPrio } from './shared.js';
 import { daySelectorHTML, bindDaySelector, timelineHTML, bindTimeline, editBlock } from './timeline.js';
+import { quickLinksHTML, bindQuickLinks } from './guide.js';
 
 export function renderPlan() {
   const date = app.selDate, monday = app.planMode === 'semaine' ? app.weekStart : mondayOf(date);
@@ -24,7 +25,8 @@ export function renderPlan() {
     h += `<h3>Avant de planifier</h3><div class="card stack">
      <label class="row"><input type="checkbox" data-ck="agendas" ${ck.agendas ? 'checked' : ''}> Ai-je vérifié Outlook, Google Agenda, Calendly ?</label>
      <label class="row"><input type="checkbox" data-ck="dejeuners" ${ck.dejeuners ? 'checked' : ''}> Ai-je des déjeuners prévus cette semaine ?</label>
-     <label class="row"><input type="checkbox" data-ck="contraintes" ${ck.contraintes ? 'checked' : ''}> Contraintes enfants, sport, dîners, courses posés ?</label></div>`;
+     <label class="row"><input type="checkbox" data-ck="contraintes" ${ck.contraintes ? 'checked' : ''}> Contraintes enfants, sport, dîners, courses posés ?</label></div>
+     <h3>Mon Aurora</h3>${quickLinksHTML()}`;
     return h;
   }
   const locked = isLocked(date);
@@ -41,6 +43,7 @@ export function renderPlan() {
   }
   h += timelineHTML(date, 'plan');
   if (!locked) h += `<div class="row" style="margin-top:12px;justify-content:space-between"><span class="lead" style="margin:0">Glisse pour déplacer, tire le bas pour la durée</span><button class="btn small" type="button" data-act="add">+ Bloc</button></div>`;
+  h += `<h3>Mon Aurora</h3>${quickLinksHTML()}`;
   return h;
 }
 
@@ -56,6 +59,7 @@ export function bindPlan(v) {
   v.querySelector('#toJournee')?.addEventListener('click', () => go('journee'));
   v.querySelector('[data-act="add"]')?.addEventListener('click', () => editBlock(null, 'plan'));
   bindPrio(v);
+  bindQuickLinks(v);
   bindDaySelector(v);
   bindTimeline(v, app.selDate);
 }

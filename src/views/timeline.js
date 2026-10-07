@@ -8,6 +8,7 @@ import { S, save, uid, removeById, isLocked, lockDay, planBlocks, realBlocks, re
 import { H0, H1, DAYS, DAYS_L, hm, dur, nowMin, today, mondayOf, weekDates, addDays, dayNum, r15 } from '../lib/time.js';
 import { $, esc, openSheet, closeSheet, toast, timeField, readTime, onTime, energyCol } from '../lib/ui.js';
 import { auroraGradient, impactRows } from './shared.js';
+import { startGuide } from './guide.js';
 
 export const PXM = 1; // 1 px par minute
 export const STATUS = { fait: ['✓', 'fait'], partiel: ['½', 'en partie'], non: ['✕', 'pas fait'], remplace: ['↷', 'remplacé'] };
@@ -200,7 +201,7 @@ export function editBlock(b, layer = 'plan') {
   openSheet(`<h4>${isNew ? (real ? 'Ajouter au réel' : 'Nouveau bloc') : 'Enrichir le bloc'}</h4>
   ${real ? `<p class="lead" style="margin:0">${isNew ? "Ce qui s'est passé sans être prévu." : 'Tu modifies le réel : le plan reste intact.'}</p>` : ''}
   <label class="f">Titre<input type="text" id="bT" value="${esc(x.title)}" placeholder="Ex. Appel découverte"></label>
-  <div class="f">Étiquette<div class="row" style="margin-top:6px">${themes().map(t => `<button type="button" class="chip" data-th="${t.id}" aria-pressed="${t.id === x.theme}"><span class="dot" style="--c:var(${t.c})"></span>${t.name}</button>`).join('')}</div></div>
+  <div class="f">Étiquette<div class="row" style="margin-top:6px">${themes().map(t => `<button type="button" class="chip" data-th="${t.id}" aria-pressed="${t.id === x.theme}"><span class="dot" style="--c:var(${t.c})"></span>${esc(t.name)}</button>`).join('')}</div><button class="link" type="button" id="manageTh" style="margin-top:8px;align-self:flex-start">Gérer mes catégories</button></div>
   <div class="row"><label class="f" style="flex:1">Début${timeField('bS', x.start)}</label><label class="f" style="flex:1">Fin${timeField('bE', x.end)}</label></div>
   ${real ? '' : `<label class="f">Jour<select id="bD">${weekDates(mon).map((d, i) => `<option value="${d}" ${d === x.date ? 'selected' : ''}>${DAYS_L[i]} ${dayNum(d)}</option>`).join('')}</select></label>`}
   <label class="f">Commentaire, visible dans le bloc<input type="text" id="bN" value="${esc(x.note)}" placeholder="Ex. relancer 2 factures"></label>
@@ -208,6 +209,7 @@ export function editBlock(b, layer = 'plan') {
   <div class="row" style="justify-content:space-between">${isNew ? '<span></span>' : '<button class="btn ghost small" type="button" id="bDel">Supprimer</button>'}<button class="btn" type="button" id="bOk">Enregistrer</button></div>`, sh => {
     let th = x.theme;
     sh.querySelectorAll('[data-th]').forEach(c => c.onclick = () => { th = c.dataset.th; sh.querySelectorAll('[data-th]').forEach(o => o.setAttribute('aria-pressed', o === c)); });
+    sh.querySelector('#manageTh').onclick = () => { closeSheet(); startGuide('themes'); };
     sh.querySelector('#bOk').onclick = () => {
       const s = readTime(sh, 'bS'), e = readTime(sh, 'bE');
       if (e <= s) { toast('La fin doit être après le début'); return; }

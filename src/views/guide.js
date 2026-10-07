@@ -16,11 +16,14 @@ const KID_PRESETS = [
   { key: 'diner', title: 'Dîner, bain, coucher', days: [0, 1, 2, 3, 4, 5, 6], start: 1140, end: 1260 }
 ];
 
-export function startGuide() {
+// focus : ouvre directement un seul écran (catégories, moments fixes, garde) avec Annuler / Enregistrer.
+export function startGuide(focus = null) {
   const usedThemes = new Set(S.blocks.map(b => b.theme));
   app.guide = {
     step: 0,
-    themesTuned: S.profile.done,
+    focus: typeof focus === 'string' ? focus : null,
+    returnTo: app.tab === 'guide' ? 'accueil' : app.tab,
+    themesTuned: S.profile.done || typeof focus === 'string',
     used: [...usedThemes],
     d: {
       name: S.profile.name || '',
@@ -35,6 +38,18 @@ export function startGuide() {
     }
   };
   go('guide');
+}
+
+// Raccourcis toujours visibles vers le paramétrage
+export function quickLinksHTML() {
+  return `<div class="qlinks">
+    <button type="button" class="chip" data-qg="themes"><span class="dot" style="--c:var(--t-travail)"></span>Mes catégories</button>
+    <button type="button" class="chip" data-qg="allFixed">↻ Mes moments fixes</button>
+    ${S.profile.custody ? '<button type="button" class="chip" data-qg="custodyGrid">Ma garde A / B</button>' : ''}
+    <button type="button" class="chip" data-qg="all">Tout mon paramétrage</button></div>`;
+}
+export function bindQuickLinks(v) {
+  v.querySelectorAll('[data-qg]').forEach(b => b.onclick = () => startGuide(b.dataset.qg === 'all' ? null : b.dataset.qg));
 }
 
 // ---------- Étapes ----------
@@ -53,7 +68,7 @@ const STEPS = [
   { id: 'wb' },
   { id: 'recap' }
 ];
-const visible = d => STEPS.filter(s => !s.when || s.when(d));
+const visible = d => (app.guide?.focus ? [{ id: app.guide.focus }] : STEPS.filter(s => !s.when || s.when(d)));
 
 // Un moment fixe, modifiable : titre, catégorie, jours, horaires
 function ruleEditor(r, d, { pickTheme = true, titleEditable = true, half = false } = {}) {
@@ -144,6 +159,16 @@ function stepHTML(id, d, g) {
         <div class="stack">${other.map(r => ruleEditor(r, d)).join('') || '<p class="empty">Aucun pour l\'instant.</p>'}</div>
         <button class="btn ghost small" type="button" data-addrule="other" style="margin-top:12px">+ Ajouter une activité fixe</button>`;
     }
+    case 'allFixed': {
+      const shared = d.kids === true && d.custodyMode === 'shared';
+      const kidsR = d.rules.filter(isKidsRule), sportR = d.rules.filter(r => r.sport && !isKidsRule(r)), otherR = d.rules.filter(r => !isKidsRule(r) && !r.sport);
+      const group = (title, rules, opts, add) => `<h3>${title}</h3><div class="stack">${rules.map(r => ruleEditor(r, d, opts)).join('') || '<p class="empty" style="margin:0">Aucun.</p>'}</div>${add || ''}`;
+      return `<h2>Mes <em>moments fixes</em></h2>
+        <p class="lead">Ce qui revient au même moment chaque semaine. Tes changements s'appliquent aux jours à venir ; les journées déjà commencées ne bougent pas.</p>
+        ${d.kids === true ? group('Avec les enfants' + (shared ? ' (selon ta garde)' : ''), kidsR, { pickTheme: false, half: shared }, '<button class="link" type="button" data-addrule="enfants" style="margin-top:10px">+ Un moment avec les enfants</button>') : ''}
+        ${sportR.length ? group('Sport', sportR, { pickTheme: false, titleEditable: false }) : ''}
+        ${group('Autres activités', otherR, {}, '<button class="link" type="button" data-addrule="other" style="margin-top:10px">+ Une activité fixe</button>')}`;
+    }
     case 'themes':
       return `<h2>Tes <em>catégories</em></h2>
         <p class="lead">D'après tes réponses, voici les étiquettes de ton agenda. Renomme, change la couleur (touche la pastille), retire ou ajoute ce qui te ressemble.</p>
@@ -198,6 +223,10 @@ export function renderGuide() {
     g.d.themes = g.d.themes.filter(keep);
   }
   const last = g.step === steps.length - 1;
+  if (g.focus) {
+    return `<div class="guide"><div class="gbody">${stepHTML(id, g.d, g)}</div>
+      <div class="gnav"><button class="btn ghost small" type="button" id="gQuit">Annuler</button><button class="btn" type="button" id="gDone">Enregistrer</button></div></div>`;
+  }
   return `<div class="guide">
     <div class="gprog" aria-label="Étape ${g.step + 1} sur ${steps.length}">${steps.map((s, i) => `<span class="${i < g.step ? 'done' : i === g.step ? 'cur' : ''}"></span>`).join('')}</div>
     <div class="gbody">${stepHTML(id, g.d, g)}</div>
@@ -215,7 +244,7 @@ export function bindGuide(v) {
   const steps = visible(d);
   q('#gNext')?.addEventListener('click', () => { g.step++; rerender(); window.scrollTo(0, 0); });
   q('#gPrev')?.addEventListener('click', () => { g.step--; rerender(); window.scrollTo(0, 0); });
-  q('#gQuit')?.addEventListener('click', () => { app.guide = null; go('accueil'); });
+  q('#gQuit')?.addEventListener('click', () => { const back = g.returnTo; app.guide = null; go(back || 'accueil'); });
   q('#gDone')?.addEventListener('click', () => commit(d));
   v.querySelectorAll('[data-jump]').forEach(b => b.onclick = () => { g.step = visible(d).findIndex(s => s.id === b.dataset.jump); rerender(); window.scrollTo(0, 0); });
 
@@ -330,14 +359,16 @@ function commit(d) {
     .map(r => ({ ...r, title: r.title.trim() || themeName(d, r.theme) }));
   const custody = d.kids === true && d.custodyMode === 'shared' ? d.custody : null;
   const custodyChanged = JSON.stringify(custody) !== JSON.stringify(S.profile.custody || null);
-  S.profile = { done: true, name: d.name, kids: d.kids, sports: d.sports, custody };
+  S.profile = { done: app.guide?.focus ? S.profile.done : true, name: d.name, kids: d.kids, sports: d.sports, custody };
   S.themes = d.themes.map(t => ({ ...t, name: t.name.trim() || 'Sans nom' }));
   S.wbTags = d.wbTags;
   S.weekPrios[mondayOf(today())] = d.prios;
   replaceRecurring(rules, custodyChanged ? rules.filter(isKidsRule).map(r => r.id) : []);
   save();
+  const focused = !!app.guide?.focus, back = app.guide?.returnTo;
   app.guide = null;
   const skipped = d.rules.length - rules.length;
-  toast(skipped ? `C'est enregistré. ${skipped} moment${skipped > 1 ? 's' : ''} sans jour n'a pas été posé.` : "C'est enregistré, ton agenda est prêt");
-  go('plan', { planMode: 'semaine', weekStart: mondayOf(today()) });
+  toast(skipped ? `C'est enregistré. ${skipped} moment${skipped > 1 ? 's' : ''} sans jour n'a pas été posé.` : focused ? 'Enregistré' : "C'est enregistré, ton agenda est prêt");
+  if (focused) go(back || 'accueil');
+  else go('plan', { planMode: 'semaine', weekStart: mondayOf(today()) });
 }

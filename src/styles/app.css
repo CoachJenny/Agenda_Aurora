@@ -309,3 +309,7 @@ body.in-guide .pulse{display:none}
 .wab{white-space:nowrap}
 .card label.row{flex-wrap:nowrap;align-items:flex-start}
 .card label.row input[type=checkbox]{flex:none;margin-top:2px}
+
+/* --- v0.6 : raccourcis Mon Aurora --- */
+.qlinks{display:flex;flex-wrap:wrap;gap:8px}
+.qlinks .chip{font-size:13px}

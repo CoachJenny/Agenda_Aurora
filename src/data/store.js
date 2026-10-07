@@ -60,7 +60,7 @@ export function resetAll() { S = empty(); save(); }
 export const onDate = (coll, date) => S[coll].filter(x => x.date === date);
 export const removeById = (coll, id) => { S[coll] = S[coll].filter(x => x.id !== id); };
 export const ritual = date => (S.rituals[date] ??= {});
-export const hasAnyData = () => S.blocks.length + S.checkins.length + S.pulses.length + S.wellbeing.length + Object.keys(S.rituals).length > 0;
+export const hasAnyData = () => S.profile.done || S.blocks.length + S.checkins.length + S.pulses.length + S.wellbeing.length + Object.keys(S.rituals).length > 0;
 
 // Priorités : celles de la semaine, sinon celles de la semaine précédente (on ne repart pas de zéro chaque lundi).
 export function weekPrios(monday) {
