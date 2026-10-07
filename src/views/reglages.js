@@ -101,7 +101,7 @@ export function openSettings() {
   <div class="card stack">
     <div id="wipeZone"><button class="link danger" type="button" id="wipe">Tout effacer</button></div>
   </div>
-  <p class="lead" style="margin:0;font-size:12px">Auror-Agenda v0.12 · le planner qui ne te juge pas · Nahara</p>
+  <p class="lead" style="margin:0;font-size:12px">Auror-Agenda v0.13 · le planner qui ne te juge pas · Nahara</p>
   <button class="btn ghost small" type="button" id="close">Fermer</button>`, sh => {
     const q = s => sh.querySelector(s);
     q('#close').onclick = closeSheet;

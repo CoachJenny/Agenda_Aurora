@@ -8,7 +8,8 @@ export const app = {
   weekStart: mondayOf(today()), // semaine affichée (Planifier en mode semaine, Ma semaine)
   planMode: 'jour',
   ritMode: nowMin() < 14 * 60 ? 'matin' : 'soir',
-  draft: null                    // check-in en cours de saisie
+  draft: null,                   // check-in en cours de saisie
+  placing: null                  // tâche en train d'être placée dans l'agenda
 };
 
 let renderer = () => {};

@@ -7,6 +7,7 @@ import { today } from '../lib/time.js';
 import { esc, toast } from '../lib/ui.js';
 import { impactRows, impactHTML, planDiffs, diffsHTML } from './shared.js';
 import { daySelectorHTML, bindDaySelector, timelineHTML, bindTimeline, editBlock } from './timeline.js';
+import { tasksHTML, bindTasks, placebarHTML } from './tasks.js';
 
 export function renderJournee() {
   const date = app.selDate, locked = isLocked(date), plan = planBlocks(date);
@@ -22,8 +23,8 @@ export function renderJournee() {
   } else {
     const bd = bodyOn(date);
     if (bd) h += `<div class="bodyctx" style="margin-bottom:10px"><span class="dot" style="--c:var(--t-enfants)"></span>Mon corps en ce moment : ${esc(bd.tag)}</div>`;
-    h += timelineHTML(date, 'cmp');
-    h += `<div class="row" style="margin-top:12px;justify-content:space-between"><span class="lead" style="margin:0">Le réel se modifie : glisse, étire, touche.</span><button class="btn small" type="button" data-act="add">+ Réel</button></div>
+    h += placebarHTML() + timelineHTML(date, 'cmp');
+    h += `<div class="row" style="margin-top:12px;justify-content:space-between"><span class="lead" style="margin:0">Touche un créneau vide du réel pour ajouter. Appui long pour déplacer ou étirer.</span><button class="btn small" type="button" data-act="add">+ Réel</button></div>
       <p class="lead" style="margin:10px 0 0;font-size:12px">Au milieu, ton énergie, de <span style="color:#9B6FCF">vidée</span> à <span style="color:#FFE66D">pleine d'élan</span>. Touche un bloc prévu pour dire s'il a été fait et combien de temps il a pris.</p>`;
   }
   // Un résumé de trois lignes ; le détail se déplie à la demande.
@@ -40,6 +41,7 @@ export function renderJournee() {
     h += `<details class="fold"><summary>Prévu → réel <span class="muted">${(k => k ? k + ' écart' + (k > 1 ? 's' : '') : 'pas d\'écart')(diffs.filter(x => x.kind !== 'ok').length)}</span></summary>${diffs.length ? `<div class="moments">${diffsHTML(diffs)}</div>` : ''}</details>`;
   }
   if (locked || imp.length) h += `<details class="fold"><summary>Ce qui a compté <span class="muted">${imp.length || 'rien de noté'}</span></summary>${imp.length ? `<div class="moments">${impactHTML(imp)}</div>` : '<p class="empty" style="margin:8px 0 0">Les check-ins et les boutons du bas nourrissent cette partie.</p>'}</details>`;
+  if (locked) h += tasksHTML();
   return h;
 }
 
@@ -48,4 +50,5 @@ export function bindJournee(v) {
   v.querySelector('#lock')?.addEventListener('click', () => { lockDay(app.selDate); render(); toast('Plan figé : note le réel ici'); });
   v.querySelector('[data-act="add"]')?.addEventListener('click', () => editBlock(null, 'real'));
   bindTimeline(v, app.selDate);
+  bindTasks(v);
 }

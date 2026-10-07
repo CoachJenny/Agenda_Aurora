@@ -9,6 +9,7 @@ import { esc } from '../lib/ui.js';
 import { prioMirror, bindPrio } from './shared.js';
 import { daySelectorHTML, bindDaySelector, timelineHTML, bindTimeline, editBlock } from './timeline.js';
 import { quickLinksHTML, bindQuickLinks } from './guide.js';
+import { tasksHTML, bindTasks, placebarHTML } from './tasks.js';
 
 export function renderPlan() {
   const date = app.selDate, monday = app.planMode === 'semaine' ? app.weekStart : mondayOf(date);
@@ -41,8 +42,9 @@ export function renderPlan() {
       <p class="lead" style="margin:0">Il reste tel que tu l'avais prévu, pour comparer. Ce qui change en vrai se note dans Ma journée. Touche un bloc pour dire s'il a été fait.</p>
       <div><button class="btn small" type="button" id="toJournee">Ouvrir Ma journée</button></div></div>`;
   }
-  h += timelineHTML(date, 'plan');
-  if (!locked) h += `<div class="row" style="margin-top:12px;justify-content:space-between"><span class="lead" style="margin:0">Glisse pour déplacer, tire le bas pour la durée</span><button class="btn small" type="button" data-act="add">+ Bloc</button></div>`;
+  h += placebarHTML() + timelineHTML(date, 'plan');
+  if (!locked) h += `<div class="row" style="margin-top:12px;justify-content:space-between"><span class="lead" style="margin:0">Touche un créneau vide pour ajouter. Appui long sur un bloc pour le déplacer, ou sur son bas pour la durée.</span><button class="btn small" type="button" data-act="add">+ Bloc</button></div>`;
+  h += tasksHTML();
   h += `<h3>Mon paramétrage</h3>${quickLinksHTML()}`;
   return h;
 }
@@ -62,6 +64,7 @@ export function bindPlan(v) {
   bindQuickLinks(v);
   bindDaySelector(v);
   bindTimeline(v, app.selDate);
+  bindTasks(v);
 }
 
 export { effectiveBlocks };

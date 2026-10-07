@@ -24,6 +24,7 @@ const empty = () => ({
   wbTags: DEFAULT_WB.map(t => ({ ...t })),
   themes: DEFAULT_THEMES.map(t => ({ ...t })),   // catégories de l'agenda, personnalisables
   recurring: [],     // moments fixes : { id, title, theme, days: [0..6], start, end }
+  tasks: [],         // tâches à placer : { id, title, created } (une liste qui court de semaine en semaine)
   recApplied: {},    // lundi -> [id des moments fixes déjà posés cette semaine-là]
   profile: { done: false, name: '', kids: null, sports: [], custody: null },
   // custody : { refMonday: lundi d'une semaine A, grid: { A: [[matin, soir] × 7], B: [...] } } en garde partagée
@@ -46,6 +47,7 @@ function migrate(x) {
   x.themes ??= DEFAULT_THEMES.map(t => ({ ...t }));
   x.recurring ??= [];
   x.recApplied ??= {};
+  x.tasks ??= [];
   x.profile ??= { done: false, name: '', kids: null, sports: [] };
   return x;
 }
@@ -169,6 +171,11 @@ export function setStatus(p, st) {
   p.status = p.status === st ? null : st;
   const r = realOf(p);
   if (p.status === 'non') { if (r) removeById('blocks', r.id); }
+  // Une tâche pas faite repart dans la liste ; si on change d'avis, elle en ressort
+  if (p.task) {
+    if (p.status === 'non' && !p.backTask) { const id = uid(); S.tasks.push({ id, title: p.title, created: today() }); p.backTask = id; }
+    else if (p.status !== 'non' && p.backTask) { removeById('tasks', p.backTask); delete p.backTask; }
+  }
   else if (!r) S.blocks.push(realCopy(p));
   if (p.status !== 'remplace') { delete p.replacedBy; const rr = realOf(p); if (rr && rr.title !== p.title && rr.replaced) { rr.title = p.title; delete rr.replaced; } }
   save();
@@ -266,3 +273,12 @@ export function loadSample() {
 }
 
 export { nowMin };
+
+// ---------- Tâches ----------
+// Une ligne collée = une tâche ; les puces, tirets et numéros en début de ligne sont retirés.
+export function addTasks(text) {
+  const lines = text.split(/\r?\n/).map(l => l.replace(/^\s*(?:[-*•–·▪◦]|\d+[.)]|\[[ xX]?\])\s+/, '').trim()).filter(Boolean);
+  lines.forEach(title => S.tasks.push({ id: uid(), title, created: today() }));
+  save();
+  return lines.length;
+}

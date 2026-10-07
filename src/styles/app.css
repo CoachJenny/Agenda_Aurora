@@ -61,7 +61,7 @@ input[type=checkbox]{accent-color:var(--gold);width:18px;height:18px}
 .timeline{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 .hour{position:absolute;left:0;right:0;border-top:1px solid rgb(43 40 80 / .6);font-size:11px;color:var(--ivory-3);font-variant-numeric:tabular-nums}
 .hour span{position:absolute;left:10px;top:3px}
-.block{position:absolute;left:50px;border-radius:10px;padding:6px 9px 6px 11px;background:color-mix(in srgb,var(--c) 20%,var(--surface));border:1px solid color-mix(in srgb,var(--c) 45%,transparent);font-size:12px;line-height:1.3;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;transition:right .25s}
+.block{position:absolute;--x0:50px;--aw:calc(100% - 58px);left:calc(var(--x0) + var(--aw) * var(--li,0) / var(--ln,1));width:calc(var(--aw) / var(--ln,1) - 3px);-webkit-touch-callout:none;border-radius:10px;padding:6px 9px 6px 11px;background:color-mix(in srgb,var(--c) 20%,var(--surface));border:1px solid color-mix(in srgb,var(--c) 45%,transparent);font-size:12px;line-height:1.3;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab;transition:box-shadow .15s,scale .15s}
 .block::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c)}
 .block.dragging{box-shadow:0 10px 24px rgb(0 0 0 / .45);z-index:6;cursor:grabbing}
 .block .t{font-weight:600;color:var(--ivory)}
@@ -223,16 +223,15 @@ body{padding-top:env(safe-area-inset-top,0px)}
 
 /* --- v0.2 : champs d'heure, durée des blocs, prévu / réel, ce qui a compté --- */
 .tf{display:block}
-.block{right:8px}
-.block .rs{position:absolute;left:0;right:0;bottom:0;height:14px;cursor:ns-resize;display:flex;align-items:center;justify-content:center;touch-action:none}
+.block .rs{position:absolute;left:0;right:0;bottom:0;height:14px;cursor:ns-resize;display:flex;align-items:center;justify-content:center}
 .block .rs::after{content:"";width:24px;height:3px;border-radius:2px;background:color-mix(in srgb,var(--c) 75%,transparent)}
 .block .stb{position:absolute;right:7px;top:4px;font-size:12px;font-weight:600}
 .timeline.cmp{--gut:44px;--rib:22px;--pw:calc((100% - var(--gut) - var(--rib) - 6px) * .42)}
-.timeline.cmp .block.ghost{left:var(--gut);right:auto;width:var(--pw);background:transparent;border:1px dashed color-mix(in srgb,var(--c) 65%,transparent);cursor:pointer;touch-action:auto}
+.timeline.cmp .block.ghost{--x0:var(--gut);--aw:var(--pw);background:transparent;border:1px dashed color-mix(in srgb,var(--c) 65%,transparent);cursor:pointer;touch-action:auto}
 .timeline.cmp .block.ghost::before{opacity:.45}
 .timeline.cmp .block.ghost .t{color:var(--ivory-2);font-weight:500}
 .timeline.cmp .block.ghost .n{color:var(--ivory-3)}
-.timeline.cmp .block.real{left:calc(var(--gut) + var(--pw) + var(--rib));right:6px}
+.timeline.cmp .block.real{--x0:calc(var(--gut) + var(--pw) + var(--rib));--aw:calc(100% - var(--gut) - var(--pw) - var(--rib) - 6px)}
 .block.st-fait .stb{color:var(--turq)}
 .block.st-partiel .stb{color:var(--gold)}
 .block.st-non .stb{color:var(--coral)}
@@ -264,14 +263,13 @@ body{padding-top:env(safe-area-inset-top,0px)}
 .rr-h{font-size:12px;color:var(--ivory-3);font-variant-numeric:tabular-nums}
 .rr-hint{font-size:12px;color:var(--gold)}
 .real-row .chip{padding:6px 10px;font-size:12.5px}
-.block[data-edit]:not(.wb){padding-bottom:14px}
+.block[data-edit]:not(.wb):has(.rs){padding-bottom:14px}
 
 /* --- v0.3 : six onglets, Ma journée, revue du soir --- */
 nav.tabs .in{grid-template-columns:repeat(6,minmax(0,1fr))}
 nav.tabs button{font-size:10.5px;padding:10px 2px 12px;white-space:nowrap}
 .timeline .block.locked{cursor:pointer;touch-action:auto}
-.timeline.review .block.locked{right:8px}
-.timeline.review .block.extra{left:auto;right:8px;width:46%;border-style:dotted;cursor:pointer;touch-action:auto;z-index:2}
+.timeline.review .block.extra{--x0:54%;--aw:calc(46% - 8px);border-style:dotted;cursor:pointer;touch-action:auto;z-index:2}
 .timeline.review .block .n{color:var(--ivory-2)}
 
 /* --- v0.4 : guide « Mon Aurora » --- */
@@ -381,3 +379,24 @@ details.fold .moments{margin-top:10px}
 .tagline{font-family:var(--display);font-style:italic;color:var(--gold);font-size:17px;margin:-2px 0 12px}
 
 input.field{font-size:16px}
+
+/* v0.13 : appui long, tâches, glisser entre les jours */
+.block.lifted{scale:1.03;box-shadow:0 10px 26px rgb(0 0 0 / .5), 0 0 0 2px color-mix(in srgb,var(--c) 70%,transparent);z-index:7}
+.timeline .block .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.durs{gap:6px;margin-top:6px}
+.durs .chip{padding:6px 11px;font-size:12.5px}
+.placebar{position:sticky;top:8px;z-index:20;display:flex;gap:10px;align-items:center;justify-content:space-between;background:color-mix(in srgb,var(--gold) 16%,var(--surface));border:1px solid rgb(255 230 109 / .55);border-radius:14px;padding:10px 12px;margin:0 0 10px;font-size:13.5px;box-shadow:0 8px 20px rgb(0 0 0 / .35)}
+.placebar b{font-weight:600;color:var(--gold)}
+.tlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.tlist li{display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:4px 6px}
+.tlist li.sel{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.tlist .tck{flex:none;width:24px;height:24px;border-radius:7px;border:1.5px solid var(--ivory-3);background:none;margin:6px 2px 6px 4px}
+.tlist .ttl{flex:1;text-align:left;background:none;border:0;color:var(--ivory);padding:8px 2px;font-size:14px;min-width:0;overflow-wrap:anywhere}
+.tlist .tdel{flex:none;background:none;border:0;color:var(--ivory-3);font-size:20px;line-height:1;padding:6px 10px}
+.tasks textarea{min-height:52px;resize:vertical}
+.toast .undo{color:var(--violet);margin-left:6px;font-weight:600}
+@keyframes slideL{from{transform:translateX(26px);opacity:.35}to{transform:none;opacity:1}}
+@keyframes slideR{from{transform:translateX(-26px);opacity:.35}to{transform:none;opacity:1}}
+#view.slide-l{animation:slideL .18s ease-out}
+#view.slide-r{animation:slideR .18s ease-out}
+@media (prefers-reduced-motion:reduce){#view.slide-l,#view.slide-r{animation:none}}

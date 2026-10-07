@@ -63,7 +63,7 @@ export function pulseSheet(p, retro) {
       const note = q('#pN').value.trim();
       if (retro || other) {
         const s = readTime(sh, 'pS'), e = readTime(sh, 'pE');
-        if (e <= s) { toast('La fin doit être après le début'); return; }
+        if (!(e > s)) { toast('La fin doit être après le début'); return; }
         if (retro) S.pulses.push({ id: uid(), type, date: today(), start: s, end: e, note, feel: type === 'flow' ? feel : null });
         else Object.assign(p, { start: s, end: e });
       }

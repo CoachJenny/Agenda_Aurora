@@ -10,7 +10,7 @@ import { longDate, today } from './lib/time.js';
 import { renderAccueil, bindAccueil } from './views/accueil.js';
 import { renderPlan, bindPlan } from './views/plan.js';
 import { renderJournee, bindJournee } from './views/journee.js';
-import { scrollToNow } from './views/timeline.js';
+import { scrollToNow, drag } from './views/timeline.js';
 import { renderCheckin, bindCheckin } from './views/checkin.js';
 import { renderRituels, bindRituels } from './views/rituels.js';
 import { renderSemaine, bindSemaine } from './views/semaine.js';
@@ -42,6 +42,7 @@ function render() {
   const mon = mondayOf(today());
   [mon, addDays(mon, 7), mondayOf(app.selDate), app.weekStart].forEach(applyRecurring);
   document.body.classList.toggle('in-guide', app.tab === 'guide');
+  if (app.tab !== 'plan' && app.tab !== 'journee') app.placing = null;
   const [draw, bind] = VIEWS[app.tab] || VIEWS.accueil;
   v.innerHTML = draw();
   bind(v);
@@ -53,6 +54,26 @@ function render() {
   lastTab = app.tab;
 }
 setRenderer(render);
+
+// Glisser vers la gauche ou la droite : jour (ou semaine) suivant ou précédent, dans Planifier et Ma journée.
+let sw = null;
+$('view').addEventListener('touchstart', e => {
+  if (e.touches.length !== 1 || (app.tab !== 'plan' && app.tab !== 'journee')) { sw = null; return; }
+  if (e.target.closest('input,textarea,select,.seg,.tasks')) { sw = null; return; }
+  sw = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now() };
+}, { passive: true });
+$('view').addEventListener('touchend', e => {
+  if (!sw || drag.active) { sw = null; return; }
+  const t = e.changedTouches[0], dx = t.clientX - sw.x, dy = t.clientY - sw.y, quick = Date.now() - sw.t < 700;
+  sw = null;
+  if (!quick || Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.6) return;
+  const dir = dx < 0 ? 1 : -1;
+  if (app.tab === 'plan' && app.planMode === 'semaine') app.weekStart = addDays(app.weekStart, 7 * dir);
+  else app.selDate = addDays(app.selDate, dir);
+  render();
+  const v = $('view');
+  v.classList.remove('slide-l', 'slide-r'); void v.offsetWidth; v.classList.add(dir > 0 ? 'slide-l' : 'slide-r');
+}, { passive: true });
 
 document.querySelectorAll('nav.tabs [data-tab]').forEach(b => b.onclick = () => go(b.dataset.tab));
 $('home').onclick = e => { e.preventDefault(); go('accueil'); };

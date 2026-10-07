@@ -29,37 +29,23 @@ export function initSheet() {
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('sheetWrap').hidden) closeSheet(); });
 }
 
-// Champ d'heure : menu par tranches de 30 minutes, plus « Autre heure… » pour une heure précise.
+// Champ d'heure : un vrai champ d'heure, modifiable à la minute (roulette sur iPhone, clavier ailleurs).
 export function timeField(id, val, from = H0 * 60, to = H1 * 60) {
   const v = Math.max(from, Math.min(to, Math.round(val / 5) * 5));
-  const slots = [];
-  for (let t = from; t <= to; t += 30) slots.push(t);
-  const all = slots.includes(v) ? slots : [...slots, v].sort((a, b) => a - b);
-  const opts = all.map(t => `<option value="${t}" ${t === v ? 'selected' : ''}>${hm(t)}</option>`).join('');
-  return `<span class="tf"><select id="${id}" data-tf>${opts}<option value="autre">Autre heure…</option></select><input type="time" id="${id}-x" value="${toTime(v)}" hidden aria-label="Heure précise"></span>`;
+  return `<input type="time" class="tf" id="${id}" value="${toTime(v)}" min="${toTime(from)}" max="${toTime(Math.min(to, 23 * 60 + 59))}" step="300">`;
 }
 export function readTime(root, id) {
-  const x = root.querySelector('#' + id + '-x');
-  if (x && !x.hidden) return fromTime(x.value);
-  return +root.querySelector('#' + id).value;
+  const x = root.querySelector('#' + id);
+  return x && x.value ? fromTime(x.value) : NaN;
 }
-// Appelle fn(minutes) quand l'heure change, que ce soit dans le menu ou en saisie libre.
+// Appelle fn(minutes) quand l'heure change (une heure vide est ignorée).
 export function onTime(root, id, fn) {
-  const s = root.querySelector('#' + id), x = root.querySelector('#' + id + '-x');
-  if (!s) return;
-  s.addEventListener('change', () => { if (s.value !== 'autre') fn(readTime(root, id)); });
-  x.addEventListener('change', () => fn(readTime(root, id)));
+  const x = root.querySelector('#' + id);
+  if (!x) return;
+  x.addEventListener('change', () => { const m = readTime(root, id); if (!isNaN(m)) fn(m); });
 }
-export function initTimeFields() {
-  document.addEventListener('change', e => {
-    const s = e.target;
-    if (s.matches && s.matches('select[data-tf]') && s.value === 'autre') {
-      const x = document.getElementById(s.id + '-x');
-      s.hidden = true; x.hidden = false; x.focus();
-      x.dispatchEvent(new Event('change', { bubbles: false }));
-    }
-  });
-}
+export function initTimeFields() { /* plus rien à préparer : champs d'heure natifs */ }
+
 
 // Échelles d'aurore : violet → corail → or (le corail est la seule jonction entre violet et or, règle de la charte)
 const lerp = (a, b, t) => a + (b - a) * t;
