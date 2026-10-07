@@ -8,10 +8,11 @@ C'est une appli web installable (PWA) : elle s'ouvre depuis l'écran d'accueil d
 ## Ce que fait la version 0.1
 
 - **Accueil** : guide vers l'étape qui correspond au moment (planifier la semaine, ouvrir la journée, check-in, clore la journée, récap).
-- **Planifier** : blocs étiquetés par thématique, déplaçables au doigt, fixes ou flexibles ; priorités de la semaine et du jour ; checklist avant de planifier ; « Voir mon vécu » superpose l'aurore d'énergie et les moments notés.
+- **Planifier** : le plan seul. Blocs étiquetés par thématique, déplaçables et redimensionnables au doigt, fixes ou flexibles ; priorités de la semaine et du jour ; checklist avant de planifier. Une fois la journée commencée, son plan est figé pour comparer.
+- **Ma journée** : le prévu et le réel côte à côte, séparés par le ruban d'énergie ; les écarts prévu → réel ; ce qui a compté, écrit en clair.
 - **Check-in** : six curseurs exprimés en mots, moment fort, échanges avec quelqu'un, « mon corps en ce moment ».
 - **Flow, procrastination, bien-être** : trois boutons toujours accessibles, sur le moment ou après coup.
-- **Matin · Soir** : mot d'ouverture, nuit, priorités ; relance depuis le dernier check-in, priorités tenues, mot de clôture, debrief libre.
+- **Matin · Soir** : mot d'ouverture, nuit, priorités, puis le plan se fige ; le soir, la journée en image où chaque bloc se qualifie (fait, en partie, pas fait, remplacé, vrais horaires), relance depuis le dernier check-in, priorités tenues, mot de clôture, debrief libre.
 - **Ma semaine** : l'histoire en mots, les chiffres clés, les rubans d'énergie et d'émotion jour par jour. L'outil montre, il n'interprète pas.
 
 Les données restent pour l'instant **sur le téléphone** (stockage du navigateur). Les réglages permettent de télécharger et de restaurer une sauvegarde.

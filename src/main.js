@@ -8,7 +8,9 @@ import { app, setRenderer, go } from './app.js';
 import { $, initSheet, initTimeFields } from './lib/ui.js';
 import { longDate, today } from './lib/time.js';
 import { renderAccueil, bindAccueil } from './views/accueil.js';
-import { renderPlan, bindPlan, scrollToNow } from './views/plan.js';
+import { renderPlan, bindPlan } from './views/plan.js';
+import { renderJournee, bindJournee } from './views/journee.js';
+import { scrollToNow } from './views/timeline.js';
 import { renderCheckin, bindCheckin } from './views/checkin.js';
 import { renderRituels, bindRituels } from './views/rituels.js';
 import { renderSemaine, bindSemaine } from './views/semaine.js';
@@ -18,6 +20,7 @@ import { openSettings } from './views/reglages.js';
 const VIEWS = {
   accueil: [renderAccueil, bindAccueil],
   plan: [renderPlan, bindPlan],
+  journee: [renderJournee, bindJournee],
   checkin: [renderCheckin, bindCheckin],
   rituels: [renderRituels, bindRituels],
   semaine: [renderSemaine, bindSemaine]
@@ -32,7 +35,7 @@ function render() {
   document.querySelectorAll('nav.tabs [data-tab]').forEach(b => b.setAttribute('aria-current', b.dataset.tab === app.tab));
   $('today').textContent = longDate(today());
   renderPulse();
-  if (app.tab === 'plan' && lastTab !== 'plan') scrollToNow();
+  if ((app.tab === 'plan' || app.tab === 'journee') && lastTab !== app.tab) scrollToNow();
   lastTab = app.tab;
 }
 setRenderer(render);

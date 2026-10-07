@@ -40,6 +40,7 @@ export function renderAccueil() {
     { k: 'jour', grp: 'Ma journée', ic: '▤', hue: 'var(--t-client)', t: 'Revoir le plan de la journée', ss: 'Déplacer, enrichir, voir mon vécu', st: `${blocksToday} bloc${blocksToday > 1 ? 's' : ''}` },
     { k: 'matin', ic: '☀', hue: 'var(--gold)', t: 'Ouvrir la journée', ss: 'Un mot, la nuit, les priorités · 1 min', st: r.open ? `« ${esc(r.open)} »` : 'à faire', ok: !!r.open },
     { k: 'checkin', ic: '≈', hue: 'var(--turq)', t: 'Faire un check-in', ss: "Où j'en suis, là, maintenant · 30 s", st: ciToday ? `${ciToday} aujourd'hui` : 'aucun encore', ok: ciToday > 0 },
+    { k: 'vecu', ic: '◐', hue: 'var(--coral)', t: 'Ma journée vécue', ss: 'Comparer le prévu et le réel', st: '' },
     { k: 'soir', ic: '☾', hue: 'var(--violet)', t: 'Clore la journée', ss: 'Ce qui a bougé, un mot pour sortir · 3 min', st: closed ? (r.close ? `« ${esc(r.close)} »` : 'fait') : 'ce soir', ok: closed },
     { k: 'recap', grp: 'Et ensuite', ic: '✦', hue: 'var(--coral)', t: 'Le récap de ma semaine', ss: "L'histoire en mots, l'aurore jour par jour", st: '' }
   ];
@@ -66,6 +67,7 @@ export function bindAccueil(v) {
     else if (k === 'matin') go('rituels', { ritMode: 'matin' });
     else if (k === 'soir') go('rituels', { ritMode: 'soir' });
     else if (k === 'checkin') go('checkin');
+    else if (k === 'vecu') go('journee', { selDate: d });
     else go('semaine', { weekStart: mondayOf(d) });
   });
 }

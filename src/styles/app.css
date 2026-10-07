@@ -265,3 +265,11 @@ body{padding-top:env(safe-area-inset-top,0px)}
 .rr-hint{font-size:12px;color:var(--gold)}
 .real-row .chip{padding:6px 10px;font-size:12.5px}
 .block[data-edit]:not(.wb){padding-bottom:14px}
+
+/* --- v0.3 : six onglets, Ma journée, revue du soir --- */
+nav.tabs .in{grid-template-columns:repeat(6,minmax(0,1fr))}
+nav.tabs button{font-size:10.5px;padding:10px 2px 12px;white-space:nowrap}
+.timeline .block.locked{cursor:pointer;touch-action:auto}
+.timeline.review .block.locked{right:8px}
+.timeline.review .block.extra{left:auto;right:8px;width:46%;border-style:dotted;cursor:pointer;touch-action:auto;z-index:2}
+.timeline.review .block .n{color:var(--ivory-2)}
