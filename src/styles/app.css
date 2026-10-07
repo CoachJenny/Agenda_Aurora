@@ -32,7 +32,7 @@ h3{font-family:var(--display);font-size:11px;letter-spacing:.12em;text-transform
 .btn.ghost{background:none;border:1px solid rgb(107 63 160 / .55);color:var(--ivory);font-weight:500;box-shadow:none}
 .btn.small{padding:8px 16px;font-size:14px}
 .link{background:none;border:0;color:var(--gold);padding:0;font-size:13px;font-weight:500}
-input[type=text],input[type=time],textarea,select{width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:12px;padding:11px 13px;color:var(--ivory)}
+input[type=text],input[type=time],input.field,textarea,select{width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:12px;padding:11px 13px;color:var(--ivory)}
 input::placeholder,textarea::placeholder{color:var(--ivory-3)}
 textarea{min-height:100px;resize:vertical}
 label.f,div.f{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--ivory-2)}
@@ -379,3 +379,5 @@ details.fold .moments{margin-top:10px}
 .syn .syncard:nth-child(2){grid-column:1/-1}
 .etile .k{text-transform:none}
 .tagline{font-family:var(--display);font-style:italic;color:var(--gold);font-size:17px;margin:-2px 0 12px}
+
+input.field{font-size:16px}

@@ -20,6 +20,7 @@ import { renderGuide, bindGuide } from './views/guide.js';
 import { renderSynthese, bindSynthese } from './views/synthese.js';
 import { renderJournal, bindJournal } from './views/journal.js';
 import { applyRecurring, landing } from './data/store.js';
+import { initCloud } from './lib/cloud.js';
 import { mondayOf, addDays } from './lib/time.js';
 
 const VIEWS = {
@@ -70,6 +71,8 @@ function openAtRightPlace() {
   window.scrollTo(0, 0);
 }
 openAtRightPlace();
+// Compte : si la cliente est connectée, on reprend la dernière version de son journal puis on rafraîchit.
+initCloud();
 
 // Quand on revient après un moment (ou un autre jour), on rouvre au bon endroit ; sinon on rafraîchit simplement.
 let hiddenAt = 0, hiddenDay = today();

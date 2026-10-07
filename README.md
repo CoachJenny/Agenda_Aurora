@@ -20,12 +20,14 @@ C'est une appli web installable (PWA) : elle s'ouvre depuis l'écran d'accueil d
 - **Synthèse** : un premier regard en quatre cartes (priorités tenues sur trois semaines, prévu → réel, bien-être, flow), puis Ma semaine jour par jour et Mon journal (tendances sur 4 ou 12 semaines : priorités, écarts de planning, ce qui a pris la place, bien-être, énergie et flow selon le moment de la journée).
 - **Ma semaine** : l'histoire en mots, les chiffres clés, les rubans d'énergie et d'émotion jour par jour ; chaque jour s'ouvre dans Ma journée pour revoir le prévu et le réel. L'outil montre, il n'interprète pas.
 
-Les données restent pour l'instant **sur le téléphone** (stockage du navigateur). Les réglages permettent de télécharger et de restaurer une sauvegarde.
+Les données sont enregistrées **sur le téléphone**. Le compte est facultatif : une fois connectée (code à 6 chiffres reçu par e-mail, sans mot de passe), le journal entier est aussi enregistré dans son compte Supabase (région UE) à chaque modification, et repris sur un autre appareil. Si le compte et le téléphone ont chacun un journal, la cliente choisit lequel garder ; l'autre reste en copie de secours. Les réglages permettent aussi de télécharger et de restaurer une sauvegarde.
+
+La table et ses règles d'accès sont dans `supabase/schema.sql`.
 
 ## Feuille de route
 
 1. **Socle** (cette version) : écrans, design Nahara, installation, données locales.
-2. **Comptes et données** : Supabase (région UE), connexion par lien magique, règles d'accès par cliente, synchronisation entre appareils.
+2. **Comptes et données** (en cours) : Supabase (région UE), connexion par code e-mail, règles d'accès par cliente, synchronisation entre appareils. Reste : expéditeur e-mail dédié (SMTP) pour les clientes.
 3. **Finitions** : écran de consentement et mentions RGPD, formulations définitives.
 4. **Test réel** : une semaine en usage personnel, puis une cliente.
 

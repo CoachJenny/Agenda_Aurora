@@ -50,10 +50,21 @@ function migrate(x) {
   return x;
 }
 
+// Chaque enregistrement prévient la synchronisation (si la cliente est connectée à son compte).
+let saveHook = null;
+export const setSaveHook = fn => { saveHook = fn; };
+const write = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); return true; } catch (e) { return false; } };
 export function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(S)); return true; }
-  catch (e) { return false; }
+  const ok = write();
+  saveHook && saveHook();
+  return ok;
 }
+// Remplace le journal par celui venu du compte (sans le renvoyer aussitôt).
+export function replaceData(data) {
+  S = migrate({ ...empty(), ...data });
+  write();
+}
+export const snapshot = () => JSON.parse(JSON.stringify(S));
 
 export function resetAll() { S = empty(); save(); }
 

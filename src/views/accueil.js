@@ -6,6 +6,7 @@ import { nowMin, today, mondayOf, weekday } from '../lib/time.js';
 import { esc } from '../lib/ui.js';
 import { render } from '../app.js';
 import { startGuide, quickLinksHTML, bindQuickLinks } from './guide.js';
+import { openSettings } from './reglages.js';
 
 const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -24,7 +25,7 @@ export function renderAccueil() {
   if (!hasAnyData()) {
     return `<div class="emptyhero"><p class="home-hello">Bienvenue dans <em>Auror-Agenda</em></p><p class="tagline">le planner qui ne te juge pas</p>
     <p class="lead">Prévoir ta semaine, noter comment tu la vis, la relire en séance. Quelques minutes par jour, pas plus.</p>
-    <div class="stack" style="max-width:320px;margin:0 auto"><button class="btn" type="button" id="guideGo">Personnaliser Auror-Agenda · 3 min</button><button class="btn ghost" type="button" id="start">Planifier directement ma semaine</button></div></div>${installCard()}`;
+    <div class="stack" style="max-width:320px;margin:0 auto"><button class="btn" type="button" id="guideGo">Personnaliser Auror-Agenda · 3 min</button><button class="btn ghost" type="button" id="start">Planifier directement ma semaine</button><button class="link" type="button" id="haveAcct" style="margin-top:6px">J'ai déjà un compte Auror-Agenda</button></div></div>${installCard()}`;
   }
   const d = today(), m = nowMin(), r = ritual(d), wd = weekday(d);
   const ciToday = onDate('checkins', d).filter(c => !c.estimated).length;
@@ -62,6 +63,7 @@ export function bindAccueil(v) {
   const q = s => v.querySelector(s);
   q('#guideGo')?.addEventListener('click', startGuide);
   q('#start')?.addEventListener('click', () => go('plan', { planMode: 'semaine', weekStart: mondayOf(today()) }));
+  q('#haveAcct')?.addEventListener('click', openSettings);
   bindQuickLinks(v);
   q('#hideInstall')?.addEventListener('click', () => { hideInstall = true; try { localStorage.setItem('aurora-hide-install', '1'); } catch (e) { /* rien */ } render(); });
   v.querySelectorAll('[data-go]').forEach(b => b.onclick = () => {
