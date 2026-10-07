@@ -7,7 +7,6 @@ export const app = {
   selDate: today(),             // jour affiché dans Planifier
   weekStart: mondayOf(today()), // semaine affichée (Planifier en mode semaine, Ma semaine)
   planMode: 'jour',
-  showVecu: false,
   ritMode: nowMin() < 14 * 60 ? 'matin' : 'soir',
   draft: null                    // check-in en cours de saisie
 };

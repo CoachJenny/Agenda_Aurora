@@ -11,7 +11,8 @@ export const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 'id-' + Math
 
 const empty = () => ({
   schema: SCHEMA,
-  blocks: [],        // { id, date, start, end, theme, title, note, fixed }
+  blocks: [],        // { id, layer: 'plan'|'real', date, start, end, theme, title, note, fixed, fromId?, status?, replacedBy? }
+  locked: {},        // date -> horodatage : le plan du jour est figé, les changements vont dans le réel
   checkins: [],      // { id, date, start, end, values, notes, event, social, estimated }
   pulses: [],        // { id, type: 'flow'|'procra', date, start, end, note, feel }
   wellbeing: [],     // { id, date, start, tag, dur }
@@ -29,9 +30,15 @@ export let S = load();
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return { ...empty(), ...JSON.parse(raw) };
+    if (raw) return migrate({ ...empty(), ...JSON.parse(raw) });
   } catch (e) { /* stockage indisponible : on démarre vide */ }
   return empty();
+}
+
+function migrate(x) {
+  x.blocks.forEach(b => { b.layer ??= 'plan'; });
+  x.locked ??= {};
+  return x;
 }
 
 export function save() {
@@ -54,6 +61,42 @@ export function weekPrios(monday) {
 }
 export const dayPrios = date => S.dayPrios[date] || weekPrios(mondayOf(date));
 
+// ---------- Prévu / réel ----------
+// Avant le début de la journée, on modifie le plan. Une fois la journée commencée (plan figé),
+// le plan reste intact et les changements vont dans une copie « réel », pour comparer le soir.
+export const isLocked = date => !!S.locked[date];
+export const planBlocks = date => S.blocks.filter(b => b.date === date && b.layer !== 'real');
+export const realBlocks = date => S.blocks.filter(b => b.date === date && b.layer === 'real');
+export const effectiveBlocks = date => isLocked(date) ? realBlocks(date) : planBlocks(date);
+export const realOf = p => S.blocks.find(b => b.layer === 'real' && b.fromId === p.id);
+
+const realCopy = p => ({ id: uid(), layer: 'real', fromId: p.id, date: p.date, start: p.start, end: p.end, theme: p.theme, title: p.title, note: p.note, fixed: p.fixed });
+
+export function lockDay(date) {
+  if (isLocked(date)) return false;
+  planBlocks(date).forEach(p => S.blocks.push(realCopy(p)));
+  S.locked[date] = new Date().toISOString();
+  save();
+  return true;
+}
+
+// Bilan du soir : fait, en partie, pas fait, remplacé. Le réel suit.
+export function setStatus(p, st) {
+  lockDay(p.date);
+  p.status = p.status === st ? null : st;
+  const r = realOf(p);
+  if (p.status === 'non') { if (r) removeById('blocks', r.id); }
+  else if (!r) S.blocks.push(realCopy(p));
+  if (p.status !== 'remplace') { delete p.replacedBy; const rr = realOf(p); if (rr && rr.title !== p.title && rr.replaced) { rr.title = p.title; delete rr.replaced; } }
+  save();
+}
+export function setReplacement(p, text) {
+  p.replacedBy = text;
+  const r = realOf(p);
+  if (r) { r.title = text || p.title; r.replaced = !!text; }
+  save();
+}
+
 export const runningPulse = type => S.pulses.find(p => p.type === type && p.end == null && p.date === today());
 
 export function bodyOn(date) {
@@ -68,7 +111,7 @@ export function importJSON(text) {
   const parsed = JSON.parse(text);
   const data = parsed && parsed.app === 'aurora' ? parsed.data : null;
   if (!data || !Array.isArray(data.blocks)) throw new Error('Ce fichier ne vient pas d\'Aurora.');
-  S = { ...empty(), ...data };
+  S = migrate({ ...empty(), ...data });
   save();
 }
 
@@ -77,7 +120,7 @@ export function loadSample() {
   const mon = mondayOf(today());
   const d = i => addDays(mon, i);
   const t = s => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
-  const b = (i, s, e, theme, title, fixed, note) => ({ id: uid(), date: d(i), start: t(s), end: t(e), theme, title, fixed: !!fixed, note: note || '' });
+  const b = (i, s, e, theme, title, fixed, note) => ({ id: uid(), layer: 'plan', date: d(i), start: t(s), end: t(e), theme, title, fixed: !!fixed, note: note || '' });
   const ci = (i, s, values, extra = {}) => ({ id: uid(), date: d(i), start: t(s), end: null, values, notes: {}, event: '', social: { modes: [], note: '' }, estimated: false, ...extra });
   const x = empty();
   x.isSample = true;
@@ -120,6 +163,19 @@ export function loadSample() {
   x.rituals[d(1)] = { open: 'curieuse', sleep: 4, agenda: true };
   x.body = [{ id: uid(), tag: 'règles', from: d(0), to: null }];
   S = x;
+  // Lundi : journée figée et bilan du soir fait. Mardi : journée figée, bilan pas encore fait.
+  const find = (i, title, layer = 'plan') => S.blocks.find(k => k.date === d(i) && k.title === title && k.layer === layer);
+  if (d(0) <= today()) {
+    lockDay(d(0));
+    const appel = find(0, 'Appel découverte', 'real'); appel.end = t('15:30');
+    S.blocks.push({ id: uid(), layer: 'real', date: d(0), start: t('15:45'), end: t('16:15'), theme: 'travail', title: 'Relances mails', note: '', fixed: false });
+    ['École', 'Proposition client', 'Déjeuner dehors avec Lou', 'Appel découverte', "Sortie d'école", 'Série'].forEach(n => (find(0, n).status = 'fait'));
+    setStatus(find(0, 'Course'), 'non');
+  }
+  if (d(1) <= today()) {
+    lockDay(d(1));
+    const compta = find(1, 'Compta du mois', 'real'); compta.start = t('14:30'); compta.end = t('15:30');
+  }
   save();
 }
 

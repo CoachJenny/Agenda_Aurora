@@ -16,7 +16,7 @@ export function openSettings() {
     <div id="sampleZone"><button class="link" type="button" id="sample">Charger la semaine d'exemple</button></div>
     <div id="wipeZone"><button class="link danger" type="button" id="wipe">Tout effacer</button></div>
   </div>
-  <p class="lead" style="margin:0;font-size:12px">Aurora v0.1 · Nahara</p>
+  <p class="lead" style="margin:0;font-size:12px">Aurora v0.2 · Nahara</p>
   <button class="btn ghost small" type="button" id="close">Fermer</button>`, sh => {
     const q = s => sh.querySelector(s);
     q('#close').onclick = closeSheet;

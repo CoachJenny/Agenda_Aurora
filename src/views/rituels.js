@@ -1,11 +1,12 @@
 // Rituels : ouvrir la journée (matin) et la clore (soir).
 
 import { app, render, go } from '../app.js';
-import { S, save, uid, onDate, ritual } from '../data/store.js';
-import { SLEEP, FACTORS, PRIO_HELD, wordOf, sliderName } from '../data/constants.js';
+import { S, save, uid, onDate, ritual, planBlocks, lockDay, isLocked, setStatus, setReplacement, realOf } from '../data/store.js';
+import { SLEEP, FACTORS, PRIO_HELD, wordOf, sliderName, theme } from '../data/constants.js';
 import { hm, nowMin, today, H0 } from '../lib/time.js';
 import { esc, toast } from '../lib/ui.js';
-import { prioMirror, bindPrio } from './shared.js';
+import { prioMirror, bindPrio, planDiffs } from './shared.js';
+import { editBlock } from './plan.js';
 import { newDraft } from './checkin.js';
 
 export function renderRituels() {
@@ -17,13 +18,26 @@ export function renderRituels() {
      <h3>La nuit</h3><div class="card"><div class="row">${SLEEP.map((t, i) => `<button type="button" class="chip" data-sl="${i + 1}" aria-pressed="${r.sleep === i + 1}">${t}</button>`).join('')}</div></div>
      <h3>Priorités du jour</h3>${prioMirror('jour', today())}
      <div class="card" style="margin-top:10px"><label class="row"><input type="checkbox" id="mAg" ${r.agenda ? 'checked' : ''}> Agenda vérifié</label></div>
-     <button class="btn" type="button" id="mOk" style="margin-top:16px;width:100%">C'est parti</button>`;
+     <p class="lead" style="margin:14px 0 0">${isLocked(today()) ? 'Ton plan du jour est déjà figé.' : 'En validant, ton plan du jour est figé : les changements de la journée iront dans le réel, et ce soir tu pourras comparer.'}</p>
+     <button class="btn" type="button" id="mOk" style="margin-top:12px;width:100%">C'est parti</button>`;
     return h;
   }
   const last = onDate('checkins', today()).sort((a, b) => b.start - a.start)[0];
   h += `<h2>Clore <em>la journée</em></h2>`;
   if (r.open) h += `<p class="lead">Ce matin, tu es entrée avec <span class="word-big">${esc(r.open)}</span></p>`;
-  h += `<div class="card stack">` + (last
+  const plan = planBlocks(today()).sort((a, b) => a.start - b.start);
+  const hint = {};
+  planDiffs(today()).forEach(dd => { if (dd.kind === 'chg') hint[dd.title + dd.t] = dd.tx; });
+  h += `<h3>Ce qui a été réalisé</h3>`;
+  h += plan.length ? `<div class="card stack">${plan.map(p => `<div class="real-row">
+      <div class="rr-top"><span class="dot" style="--c:var(${theme(p.theme).c})"></span><b>${esc(p.title)}</b><span class="rr-h">${hm(p.start)}–${hm(p.end)}</span></div>
+      ${hint[p.title + p.start] ? `<div class="rr-hint">${hint[p.title + p.start]}</div>` : ''}
+      <div class="row">${[['fait', '✓ fait'], ['partiel', '◐ en partie'], ['non', '✕ pas fait'], ['remplace', '↷ remplacé']].map(([k, l]) => `<button type="button" class="chip" data-pst="${p.id}" data-v="${k}" aria-pressed="${p.status === k}">${l}</button>`).join('')}</div>
+      ${p.status === 'remplace' ? `<input type="text" data-repl="${p.id}" value="${esc(p.replacedBy || '')}" placeholder="Remplacé par quoi ?">` : ''}
+    </div>`).join('')}
+    <div><button class="link" type="button" id="addReal">+ Ajouter ce qui s'est passé sans être prévu</button></div></div>`
+    : `<p class="empty">Rien n'était prévu aujourd'hui.</p><div><button class="link" type="button" id="addReal">+ Noter ce qui s'est passé</button></div>`;
+  h += `<h3>Ton ressenti</h3><div class="card stack">` + (last
     ? `<div><b style="font-weight:600">À ${hm(last.start)}, tu étais là :</b><div class="last">${Object.entries(last.values).map(([k, v]) => `<span class="kv">${sliderName(k).toLowerCase()} <b>${wordOf(k, v)}</b></span>`).join('') || '<span class="kv">un moment noté</span>'}</div></div>
        <b style="font-weight:600">Est-ce que ça a bougé depuis ?</b>
        <div class="row"><button class="btn small" type="button" id="sYes">Oui, à quelle heure ?</button>${Object.keys(last.values).length ? '<button class="btn ghost small" type="button" id="sNo">Non, c\'est resté pareil</button>' : ''}</div>`
@@ -46,9 +60,15 @@ export function bindRituels(v) {
     q('#mOpen').oninput = e => { r.open = e.target.value.trim(); save(); };
     q('#mAg').onchange = e => { r.agenda = e.target.checked; save(); };
     bindPrio(v);
-    q('#mOk').onclick = () => { save(); toast(r.open ? `Belle entrée : « ${r.open} »` : 'Matin noté'); go('plan', { planMode: 'jour', selDate: today() }); };
+    q('#mOk').onclick = () => { lockDay(today()); save(); toast(r.open ? `Belle entrée : « ${r.open} »` : 'Matin noté'); go('plan', { planMode: 'jour', selDate: today() }); };
     return;
   }
+  v.querySelectorAll('[data-pst]').forEach(b => b.onclick = () => {
+    const p = S.blocks.find(x => x.id === b.dataset.pst);
+    setStatus(p, b.dataset.v); render();
+  });
+  v.querySelectorAll('[data-repl]').forEach(i => i.oninput = () => setReplacement(S.blocks.find(x => x.id === i.dataset.repl), i.value.trim()));
+  q('#addReal').onclick = () => { lockDay(today()); app.selDate = today(); editBlock(null, 'real'); };
   q('#sYes').onclick = () => go('checkin', { draft: newDraft(Math.max(H0 * 60, nowMin() - 60)) });
   const no = q('#sNo');
   no && (no.onclick = () => {

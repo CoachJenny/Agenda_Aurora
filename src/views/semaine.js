@@ -1,10 +1,10 @@
 // Ma semaine : la vue de séance. L'outil montre, la cliente fait les liens.
 
 import { app, render } from '../app.js';
-import { S, onDate, bodyOn } from '../data/store.js';
+import { S, onDate, bodyOn, planBlocks } from '../data/store.js';
 import { DAYS, DAYS_L, dur, pct, today, weekDates, addDays, dayNum, cap, weekLabel, mondayOf } from '../lib/time.js';
 import { esc, energyCol, emoCol } from '../lib/ui.js';
-import { auroraGradient, momentRows, momentsHTML } from './shared.js';
+import { auroraGradient, impactRows, impactHTML, planDiffs, diffsHTML, diffSummary } from './shared.js';
 
 export function renderSemaine() {
   const days = weekDates(app.weekStart), inWeek = x => days.includes(x.date);
@@ -25,14 +25,14 @@ export function renderSemaine() {
   <h3>L'histoire en mots</h3><div class="card">${story ? `<div class="story">${story}</div>` : '<p class="empty" style="margin:0">Les mots du matin et du soir apparaîtront ici.</p>'}</div>
   <h3>En un coup d'œil</h3><div class="tiles">
    <div class="tile flow"><div class="k"><i>✦</i>Flow</div><div class="v">${dur(fT)}</div><div class="s">${flows.length} moment${pl(flows.length)}</div></div>
-   <div class="tile wbt"><div class="k"><i>❀</i>Bien-être</div><div class="v">${dur(wT)}</div><div class="s">${wbs.length} moment${pl(wbs.length)} · ${S.blocks.filter(b => b.theme === 'bienetre' && inWeek(b)).length} prévus</div></div>
+   <div class="tile wbt"><div class="k"><i>❀</i>Bien-être</div><div class="v">${dur(wT)}</div><div class="s">${wbs.length} moment${pl(wbs.length)} · ${S.blocks.filter(b => b.theme === 'bienetre' && b.layer !== 'real' && inWeek(b)).length} prévus</div></div>
    <div class="tile"><div class="k"><i>◌</i>Procrastination</div><div class="v">${dur(pT)}</div><div class="s">${pros.length} moment${pl(pros.length)}</div></div>
    <div class="tile tprio"><div class="k"><i>◆</i>Priorités tenues</div><div class="v">${held + part}<span style="font-size:16px;color:var(--ivory-3)"> / ${prioDays.length} j</span></div><div class="s">${held} oui · ${part} en partie</div></div>
   </div>
   <h3>Jour par jour</h3><div class="stack">`;
   days.forEach(d => {
-    const r = S.rituals[d] || {}, cs = onDate('checkins', d), mo = momentRows(d);
-    const any = cs.length || mo.length || r.open || r.close;
+    const r = S.rituals[d] || {}, cs = onDate('checkins', d), mo = impactRows(d), diffs = planDiffs(d).filter(x => x.kind !== 'ok'), sum = diffSummary(d);
+    const any = cs.length || mo.length || diffs.length || sum || r.open || r.close;
     const ws = (r.open || r.close) ? `${esc(r.open || '…')}<span>→</span>${esc(r.close || '…')}` : '';
     h += `<div class="dcard ${d === today() ? 'today' : ''}"><div class="dtop"><span class="dn">${cap(DAYS_L[days.indexOf(d)])}<span>${dayNum(d)}</span></span><span class="ws">${ws}</span></div>`;
     if (!any) { h += `<p class="empty" style="margin:8px 0 0">${d > today() ? 'À venir' : 'Rien de noté'}</p></div>`; return; }
@@ -42,7 +42,8 @@ export function renderSemaine() {
     if (ge) h += `<div class="rlab"><span>énergie</span><span>de vidée à pleine d'élan</span></div><div class="ribbon" style="background:${ge},var(--surface-2)"></div>`;
     if (gm) h += `<div class="rlab" style="margin-top:7px"><span>émotion</span><span>de très lourd à très positif</span></div><div class="ribbon emo" style="background:${gm},var(--surface-2)"></div>`;
     if (ge || gm) h += `<div class="ticks">${[9, 12, 15, 18, 21].map(x => `<span style="left:${pct(x * 60)}%">${x}h</span>`).join('')}</div>`;
-    if (mo.length) h += `<div class="moments">${momentsHTML(mo)}</div>`;
+    if (sum || diffs.length) h += `<p class="sublab">Prévu → réel${sum ? ` · <span>${sum}</span>` : ''}</p>${diffs.length ? `<div class="moments">${diffsHTML(diffs)}</div>` : ''}`;
+    if (mo.length) h += `<p class="sublab">Ce qui a compté</p><div class="moments">${impactHTML(mo)}</div>`;
     if (r.debrief) h += `<p class="lead" style="margin:10px 0 0;font-style:italic">« ${esc(r.debrief)} »</p>`;
     h += `</div>`;
   });

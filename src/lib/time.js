@@ -20,6 +20,8 @@ export const dayNum = s => parse(s).getDate();
 
 export const nowMin = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
 export const r15 = m => Math.round(m / 15) * 15;
+export const toTime = m => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
+export const fromTime = s => { const [h, m] = (s || '0:0').split(':').map(Number); return h * 60 + (m || 0); };
 export const hm = m => { m = Math.max(0, Math.min(1439, Math.round(m))); const h = Math.floor(m / 60), mm = m % 60; return h + 'h' + (mm ? pad(mm) : ''); };
 export const dur = m => { m = Math.round(m); const h = Math.floor(m / 60), r = m % 60; return h ? `${h} h${r ? ' ' + pad(r) : ''}` : `${r} min`; };
 export const pct = m => ((m - H0 * 60) / ((H1 - H0) * 60)) * 100;

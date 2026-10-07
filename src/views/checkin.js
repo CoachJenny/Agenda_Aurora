@@ -4,7 +4,7 @@ import { app, render } from '../app.js';
 import { S, save, uid, onDate, bodyOn } from '../data/store.js';
 import { SLIDERS, BODY, SOCIAL, wordOf, sliderName } from '../data/constants.js';
 import { hm, nowMin, today, r15, addDays } from '../lib/time.js';
-import { esc, openSheet, closeSheet, toast, slotSel } from '../lib/ui.js';
+import { esc, openSheet, closeSheet, toast, timeField, onTime } from '../lib/ui.js';
 import { momentRows, momentsHTML } from './shared.js';
 import { pulseSheet } from './pulses.js';
 
@@ -16,7 +16,7 @@ export function renderCheckin() {
   let h = `<h2>Où <em>j'en suis</em></h2><p class="lead">Ne bouge que ce qui bouge. Le reste reste éteint.</p>
   <div class="card stack"><b style="font-weight:600">Ça concerne…</b>
    <div class="seg" role="group"><button type="button" data-w="now" aria-pressed="${d.when === 'now'}">Maintenant</button><button type="button" data-w="heure" aria-pressed="${d.when === 'heure'}">Un moment</button><button type="button" data-w="plage" aria-pressed="${d.when === 'plage'}">Une plage</button></div>
-   ${d.when !== 'now' ? `<div class="row"><label class="f" style="flex:1">${d.when === 'plage' ? 'De' : 'À'}${slotSel('cS', d.start)}</label>${d.when === 'plage' ? `<label class="f" style="flex:1">À${slotSel('cE', d.end ?? d.start + 60)}</label>` : ''}</div>` : ''}
+   ${d.when !== 'now' ? `<div class="row"><label class="f" style="flex:1">${d.when === 'plage' ? 'De' : 'À'}${timeField('cS', d.start)}</label>${d.when === 'plage' ? `<label class="f" style="flex:1">À${timeField('cE', d.end ?? d.start + 60)}</label>` : ''}</div>` : ''}
   </div>
   <div class="card" style="margin-top:12px">` + SLIDERS.map(s => {
     const on = d.values[s.id] != null, w = on ? wordOf(s.id, d.values[s.id]) : 'pas touché';
@@ -50,8 +50,8 @@ export function bindCheckin(v) {
     if (d.when === 'plage' && d.end == null) d.end = d.start + 60;
     render();
   });
-  const cs = q('#cS'); cs && (cs.onchange = () => (d.start = +cs.value));
-  const ce = q('#cE'); ce && (ce.onchange = () => (d.end = +ce.value));
+  onTime(v, 'cS', m => (d.start = m));
+  onTime(v, 'cE', m => (d.end = m));
   SLIDERS.forEach(s => {
     const r = q('#r-' + s.id);
     const upd = () => {

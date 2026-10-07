@@ -1,7 +1,7 @@
 // Accueil : guide vers l'étape qui correspond au moment.
 
 import { go } from '../app.js';
-import { S, onDate, ritual, weekPrios, hasAnyData, loadSample } from '../data/store.js';
+import { S, onDate, ritual, weekPrios, hasAnyData, loadSample, effectiveBlocks } from '../data/store.js';
 import { nowMin, today, mondayOf, weekday } from '../lib/time.js';
 import { esc, toast } from '../lib/ui.js';
 import { render } from '../app.js';
@@ -27,7 +27,7 @@ export function renderAccueil() {
   }
   const d = today(), m = nowMin(), r = ritual(d), wd = weekday(d);
   const ciToday = onDate('checkins', d).filter(c => !c.estimated).length;
-  const blocksToday = onDate('blocks', d).length;
+  const blocksToday = effectiveBlocks(d).length;
   const prios = weekPrios(mondayOf(d));
   const closed = !!(r.close || r.prio);
   let rec;

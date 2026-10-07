@@ -5,7 +5,7 @@ import './styles/app.css';
 import { registerSW } from 'virtual:pwa-register';
 
 import { app, setRenderer, go } from './app.js';
-import { $, initSheet } from './lib/ui.js';
+import { $, initSheet, initTimeFields } from './lib/ui.js';
 import { longDate, today } from './lib/time.js';
 import { renderAccueil, bindAccueil } from './views/accueil.js';
 import { renderPlan, bindPlan, scrollToNow } from './views/plan.js';
@@ -41,6 +41,7 @@ document.querySelectorAll('nav.tabs [data-tab]').forEach(b => b.onclick = () => 
 $('home').onclick = e => { e.preventDefault(); go('accueil'); };
 $('settings').onclick = openSettings;
 initSheet();
+initTimeFields();
 initPulses();
 render();
 
