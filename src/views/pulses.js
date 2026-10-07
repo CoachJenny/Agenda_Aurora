@@ -5,6 +5,7 @@ import { S, save, uid, runningPulse } from '../data/store.js';
 import { WB_DURATIONS } from '../data/constants.js';
 import { H0, hm, dur, nowMin, today, r15 } from '../lib/time.js';
 import { $, esc, openSheet, closeSheet, toast, timeField, readTime, onTime } from '../lib/ui.js';
+import { startGuide } from './guide.js';
 
 const NAMES = { flow: ['Flow', '✦'], procra: ['Procrastination', '◌'] };
 
@@ -73,12 +74,11 @@ export function pulseSheet(p, retro) {
 }
 
 export function wbSheet() {
-  let tag = null, d = null, when = 'now', manage = false;
+  let tag = null, d = null, when = 'now';
   const draw = () => {
     $('sheet').innerHTML = `<h4 style="color:var(--turq)">❀ Un moment bien-être</h4>
-    <div class="row">${S.wbTags.map((t, i) => `<button type="button" class="chip" data-wt="${i}" aria-pressed="${tag === t.name}">${esc(t.name)} <span style="color:var(--ivory-3);font-size:11px">${t.dur} min</span>${manage ? ` <b data-rm="${i}" aria-label="Retirer" style="color:var(--coral)">×</b>` : ''}</button>`).join('')}</div>
-    <div class="row"><button class="link" type="button" id="wMan">${manage ? 'Terminé' : 'Personnaliser mes activités'}</button></div>
-    ${manage ? `<div class="row"><input type="text" id="wNew" placeholder="Nouvelle activité" style="flex:2;min-width:0"><select id="wNewD" style="flex:1;min-width:0">${WB_DURATIONS.map(x => `<option value="${x}">${x} min</option>`).join('')}</select><button class="btn small" type="button" id="wAdd">Ajouter</button></div>` : ''}
+    <div class="row">${S.wbTags.map((t, i) => `<button type="button" class="chip" data-wt="${i}" aria-pressed="${tag === t.name}">${esc(t.name)} <span style="color:var(--ivory-3);font-size:11px">${t.dur} min</span></button>`).join('')}</div>
+    <div class="row"><button class="link" type="button" id="wMan">Modifier mes activités (noms, durées)</button></div>
     <div class="f">Durée<div class="row" style="margin-top:6px">${WB_DURATIONS.map(x => `<button type="button" class="chip" data-wd="${x}" aria-pressed="${d === x}">${x} min</button>`).join('')}</div></div>
     <div class="seg" role="group"><button type="button" data-ww="now" aria-pressed="${when === 'now'}">Là, maintenant</button><button type="button" data-ww="t" aria-pressed="${when !== 'now'}">Plus tôt</button></div>
     ${when !== 'now' ? `<label class="f">À${timeField('wT', when)}</label>` : ''}
@@ -86,12 +86,9 @@ export function wbSheet() {
     const sh = $('sheet'), q = s => sh.querySelector(s);
     sh.querySelectorAll('[data-wt]').forEach(c => c.onclick = e => {
       const i = +c.dataset.wt;
-      if (e.target.dataset.rm != null) { S.wbTags.splice(i, 1); save(); draw(); return; }
       tag = S.wbTags[i].name; d = S.wbTags[i].dur; draw();
     });
-    q('#wMan').onclick = () => { manage = !manage; draw(); };
-    const add = q('#wAdd');
-    add && (add.onclick = () => { const n = q('#wNew').value.trim(); if (!n) return; S.wbTags.push({ name: n, dur: +q('#wNewD').value }); save(); draw(); });
+    q('#wMan').onclick = () => { closeSheet(); startGuide('wb'); };
     sh.querySelectorAll('[data-wd]').forEach(c => c.onclick = () => { d = +c.dataset.wd; draw(); });
     sh.querySelectorAll('[data-ww]').forEach(c => c.onclick = () => { when = c.dataset.ww === 'now' ? 'now' : Math.max(H0 * 60, r15(nowMin() - 60)); draw(); });
     onTime(sh, 'wT', m => (when = m));

@@ -313,3 +313,11 @@ body.in-guide .pulse{display:none}
 /* --- v0.6 : raccourcis Mon Aurora --- */
 .qlinks{display:flex;flex-wrap:wrap;gap:8px}
 .qlinks .chip{font-size:13px}
+
+/* --- v0.7 : palette 30 couleurs --- */
+.swatches{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:10px;margin:-2px 0 4px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.swatches .sw{aspect-ratio:1;max-width:100%;border-radius:50%;background:var(--c);border:2px solid transparent;padding:0;cursor:pointer}
+.swatches .sw[aria-pressed="true"]{border-color:var(--ivory);box-shadow:0 0 0 2px var(--night) inset}
+.tdot{cursor:pointer}
+.swatches{grid-template-columns:repeat(5,38px);justify-content:space-between}
+.swatches .sw{width:38px;height:38px}

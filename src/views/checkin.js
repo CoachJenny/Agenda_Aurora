@@ -93,20 +93,31 @@ export function bindCheckin(v) {
 }
 
 function editBody() {
-  const cur = bodyOn(today());
-  let tag = cur?.tag || null;
-  openSheet(`<h4>Mon corps en ce moment</h4><p class="lead" style="margin:0">Une période à garder en tête. L'outil ne fait que la marquer.</p>
-  <div class="row">${BODY.map(b => `<button type="button" class="chip" data-b="${b}" aria-pressed="${b === tag}">${b}</button>`).join('')}</div>
-  <div class="row" style="justify-content:space-between">${cur ? '<button class="btn ghost small" type="button" id="bdEnd">Terminer la période</button>' : '<span></span>'}<button class="btn" type="button" id="bdOk">Valider</button></div>`, sh => {
-    sh.querySelectorAll('[data-b]').forEach(c => c.onclick = () => { tag = c.dataset.b; sh.querySelectorAll('[data-b]').forEach(o => o.setAttribute('aria-pressed', o === c)); });
+  // Plusieurs éléments possibles : on coche ce qui est là aujourd'hui, on décoche ce qui est passé.
+  const active = () => S.body.filter(b => b.from <= today() && (!b.to || b.to >= today()));
+  const sel = new Set(active().map(b => b.tag));
+  let other = '';
+  openSheet(`<h4>Mon corps en ce moment</h4><p class="lead" style="margin:0">Ce qui se passe dans ton corps ces jours-ci. Plusieurs choses à la fois, c'est possible. L'outil ne fait que le marquer.</p>
+  <div class="row">${[...new Set([...BODY.filter(b => b !== 'autre'), ...sel])].map(b => `<button type="button" class="chip" data-b="${esc(b)}" aria-pressed="${sel.has(b)}">${esc(b)}</button>`).join('')}</div>
+  <div class="row" style="flex-wrap:nowrap"><input type="text" id="bdOther" placeholder="Autre chose ? Un mot" style="flex:1;min-width:0"></div>
+  <button class="btn" type="button" id="bdOk">Valider</button>`, sh => {
+    sh.querySelectorAll('[data-b]').forEach(c => c.onclick = () => {
+      const t = c.dataset.b;
+      sel.has(t) ? sel.delete(t) : sel.add(t);
+      c.setAttribute('aria-pressed', sel.has(t));
+    });
+    sh.querySelector('#bdOther').oninput = e => (other = e.target.value.trim());
     sh.querySelector('#bdOk').onclick = () => {
-      if (tag && (!cur || cur.tag !== tag)) {
-        if (cur) cur.to = addDays(today(), -1);
-        S.body.push({ id: uid(), tag, from: today(), to: null });
-      }
+      if (other) sel.add(other);
+      const now = active();
+      // Terminé : ce qui n'est plus coché s'arrête hier (ou disparaît s'il avait commencé aujourd'hui)
+      now.filter(b => !sel.has(b.tag)).forEach(b => {
+        if (b.from === today()) S.body = S.body.filter(x => x !== b);
+        else b.to = addDays(today(), -1);
+      });
+      // Nouveau : ce qui est coché et pas encore en cours commence aujourd'hui
+      [...sel].filter(t => !now.some(b => b.tag === t)).forEach(tag => S.body.push({ id: uid(), tag, from: today(), to: null }));
       save(); closeSheet(); render();
     };
-    const end = sh.querySelector('#bdEnd');
-    end && (end.onclick = () => { cur.to = addDays(today(), -1); save(); closeSheet(); render(); toast('Période terminée'); });
   });
 }

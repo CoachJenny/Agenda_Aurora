@@ -160,8 +160,11 @@ export function setReplacement(p, text) {
 
 export const runningPulse = type => S.pulses.find(p => p.type === type && p.end == null && p.date === today());
 
+// Plusieurs choses peuvent se passer en même temps dans le corps : chacune a sa propre période.
+export const bodiesOn = date => S.body.filter(b => b.from <= date && (!b.to || b.to >= date));
 export function bodyOn(date) {
-  return S.body.find(b => b.from <= date && (!b.to || b.to >= date));
+  const list = bodiesOn(date);
+  return list.length ? { tag: list.map(b => b.tag).join(', '), list } : null;
 }
 
 // ---------- Export / import : le filet de sécurité de la cliente ----------

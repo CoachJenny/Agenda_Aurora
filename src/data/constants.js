@@ -14,7 +14,7 @@ export const DEFAULT_THEMES = [
   { id: 'bienetre', name: 'Bien-être', c: '--turq' }
 ];
 // Couleurs disponibles pour les catégories (jetons définis dans tokens.css)
-export const PALETTE = ['--t-travail', '--t-client', '--t-prospect', '--t-sport', '--t-enfants', '--t-libre', '--t-repas', '--t-maison', '--t-sorties', '--t-ciel', '--t-ambre', '--t-lilas', '--t-sauge', '--turq'];
+export const PALETTE = Array.from({ length: 30 }, (_, i) => `--c${String(i + 1).padStart(2, '0')}`);
 export const WEEKDAYS_SHORT = ['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di'];
 export const SPORTS = ['course', 'marche', 'yoga', 'natation', 'vélo', 'salle de sport', 'danse', 'pilates', 'escalade', 'arts martiaux'];
 

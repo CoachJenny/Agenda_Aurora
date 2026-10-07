@@ -8,6 +8,8 @@
   --btn-gradient:linear-gradient(135deg,#6B3FA0,#BF5050);
   --reveal-gradient:linear-gradient(135deg,#FFE66D,#FF6B6B);
   --t-travail:#9B6FCF; --t-client:#7095EC; --t-prospect:#FFE66D; --t-sport:#AAC56E; --t-enfants:#EE9DBE;
+  /* palette des catégories : 15 teintes claires puis 15 teintes profondes */
+  --c01:#ED9082; --c02:#EDBB82; --c03:#EDE682; --c04:#C9ED82; --c05:#9FED82; --c06:#82ED90; --c07:#82EDBB; --c08:#82EDE6; --c09:#82C9ED; --c10:#829FED; --c11:#9082ED; --c12:#BB82ED; --c13:#E682ED; --c14:#ED82C9; --c15:#ED829F; --c16:#CF6959; --c17:#CF9859; --c18:#CFC759; --c19:#A8CF59; --c20:#78CF59; --c21:#59CF69; --c22:#59CF98; --c23:#59CFC7; --c24:#59A8CF; --c25:#5978CF; --c26:#6959CF; --c27:#9859CF; --c28:#C759CF; --c29:#CF59A8; --c30:#CF5978;
   --t-ciel:#7FC8F8; --t-ambre:#F2A65A; --t-lilas:#D7A9F5; --t-sauge:#8FBF9F;
   --t-libre:#E8D3A6; --t-repas:#CE8E6E; --t-maison:#99A1C2; --t-sorties:#D06AA0;
   --display:"Playfair Display", Georgia, "Times New Roman", serif;

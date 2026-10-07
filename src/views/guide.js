@@ -171,12 +171,12 @@ function stepHTML(id, d, g) {
     }
     case 'themes':
       return `<h2>Tes <em>catégories</em></h2>
-        <p class="lead">D'après tes réponses, voici les étiquettes de ton agenda. Renomme, change la couleur (touche la pastille), retire ou ajoute ce qui te ressemble.</p>
+        <p class="lead">D'après tes réponses, voici les étiquettes de ton agenda. Renomme, choisis une couleur en touchant la pastille, retire ou ajoute ce qui te ressemble.</p>
         <div class="stack">${d.themes.map(t => `<div class="trow" data-tid="${t.id}">
           <button type="button" class="tdot" data-tcol style="--c:var(${t.c})" aria-label="Changer la couleur de ${esc(t.name)}"></button>
           <input type="text" data-tname value="${esc(t.name)}" style="flex:1;min-width:0">
           ${t.id === 'bienetre' ? '<span class="tlock" title="Utilisée par le bouton Bien-être">❀</span>' : `<button type="button" class="iconbtn" data-tdel aria-label="Retirer ${esc(t.name)}" style="width:34px;height:34px;flex:none">✕</button>`}
-        </div>`).join('')}</div>
+        </div>${g.colorOpen === t.id ? `<div class="swatches" role="group" aria-label="Couleur de ${esc(t.name)}">${PALETTE.map(c => `<button type="button" class="sw" data-sw="${c}" data-swt="${t.id}" style="--c:var(${c})" aria-pressed="${t.c === c}" aria-label="Couleur ${c.slice(3)}"></button>`).join('')}</div>` : ''}`).join('')}</div>
         <div class="row" style="margin-top:12px;flex-wrap:nowrap"><input type="text" id="gThNew" placeholder="Nouvelle catégorie" style="flex:1;min-width:0"><button class="btn small" type="button" id="gThAdd">Ajouter</button></div>`;
     case 'prios':
       return `<h2>Qu'est-ce qui <em>compte le plus</em> en ce moment ?</h2>
@@ -184,8 +184,12 @@ function stepHTML(id, d, g) {
         <div class="row">${d.themes.map(t => `<button type="button" class="chip" data-gp="${t.id}" aria-pressed="${d.prios.includes(t.id)}"><span class="dot" style="--c:var(${t.c})"></span>${esc(t.name)}</button>`).join('')}</div>`;
     case 'wb':
       return `<h2>Tes petits moments qui <em>font du bien</em></h2>
-        <p class="lead">Ils apparaîtront derrière le bouton Bien-être, pour les noter en un geste. Retire ceux qui ne te parlent pas, ajoute les tiens.</p>
-        <div class="row">${d.wbTags.map((t, i) => `<span class="chip" aria-pressed="true">${esc(t.name)} <span style="color:var(--ivory-3);font-size:11px">${t.dur} min</span> <button type="button" data-wbdel="${i}" aria-label="Retirer ${esc(t.name)}" style="background:none;border:0;color:var(--coral);padding:0 0 0 4px">✕</button></span>`).join('')}</div>
+        <p class="lead">Ils apparaîtront derrière le bouton Bien-être, pour les noter en un geste. Renomme-les, change leur durée, retire ceux qui ne te parlent pas, ajoute les tiens.</p>
+        <div class="stack">${d.wbTags.map((t, i) => `<div class="trow" data-wbi="${i}">
+          <span class="tlock">❀</span>
+          <input type="text" data-wbname value="${esc(t.name)}" style="flex:2;min-width:0" aria-label="Nom">
+          <select data-wbdur style="flex:1;min-width:0;max-width:96px" aria-label="Durée">${[...new Set([...WB_DURATIONS, t.dur])].sort((a, b) => a - b).map(x => `<option value="${x}" ${x === t.dur ? 'selected' : ''}>${x} min</option>`).join('')}</select>
+          <button type="button" class="iconbtn" data-wbdel="${i}" aria-label="Retirer ${esc(t.name)}" style="width:34px;height:34px;flex:none">✕</button></div>`).join('')}</div>
         <div class="row" style="margin-top:12px;flex-wrap:nowrap"><input type="text" id="gWbNew" placeholder="Ex. thé au jardin" style="flex:2;min-width:0"><select id="gWbDur" style="flex:1;min-width:0">${WB_DURATIONS.map(x => `<option value="${x}">${x} min</option>`).join('')}</select><button class="btn small" type="button" id="gWbAdd">Ajouter</button></div>`;
     case 'recap': {
       const mon = mondayOf(today());
@@ -321,7 +325,7 @@ export function bindGuide(v) {
   v.querySelectorAll('[data-tid]').forEach(row => {
     const t = d.themes.find(x => x.id === row.dataset.tid);
     row.querySelector('[data-tname]').addEventListener('input', e => (t.name = e.target.value));
-    row.querySelector('[data-tcol]').onclick = () => { t.c = PALETTE[(PALETTE.indexOf(t.c) + 1) % PALETTE.length]; rerender(); };
+    row.querySelector('[data-tcol]').onclick = () => { g.colorOpen = g.colorOpen === t.id ? null : t.id; rerender(); };
     const del = row.querySelector('[data-tdel]');
     del && (del.onclick = () => {
       d.themes = d.themes.filter(x => x !== t);
@@ -346,6 +350,12 @@ export function bindGuide(v) {
     rerender();
   });
   // Bien-être
+  v.querySelectorAll('[data-sw]').forEach(b => b.onclick = () => { const t = d.themes.find(x => x.id === b.dataset.swt); t.c = b.dataset.sw; g.colorOpen = null; rerender(); });
+  v.querySelectorAll('[data-wbi]').forEach(row => {
+    const t = d.wbTags[+row.dataset.wbi];
+    row.querySelector('[data-wbname]').addEventListener('input', e => (t.name = e.target.value));
+    row.querySelector('[data-wbdur]').addEventListener('change', e => (t.dur = +e.target.value));
+  });
   v.querySelectorAll('[data-wbdel]').forEach(b => b.onclick = () => { d.wbTags.splice(+b.dataset.wbdel, 1); rerender(); });
   q('#gWbAdd')?.addEventListener('click', () => {
     const n = q('#gWbNew').value.trim();
@@ -361,7 +371,7 @@ function commit(d) {
   const custodyChanged = JSON.stringify(custody) !== JSON.stringify(S.profile.custody || null);
   S.profile = { done: app.guide?.focus ? S.profile.done : true, name: d.name, kids: d.kids, sports: d.sports, custody };
   S.themes = d.themes.map(t => ({ ...t, name: t.name.trim() || 'Sans nom' }));
-  S.wbTags = d.wbTags;
+  S.wbTags = d.wbTags.map(t => ({ ...t, name: t.name.trim() })).filter(t => t.name);
   S.weekPrios[mondayOf(today())] = d.prios;
   replaceRecurring(rules, custodyChanged ? rules.filter(isKidsRule).map(r => r.id) : []);
   save();
