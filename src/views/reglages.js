@@ -34,7 +34,7 @@ function accountHTML() {
   if (acct.step === 'code') {
     return `<b style="font-weight:600">Ton code</b>
     <p class="lead" style="margin:0">Un code vient de partir à <b>${esc(acct.email)}</b>. S'il n'arrive pas, regarde dans tes indésirables.</p>
-    <input class="field" id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456" style="font-size:22px;letter-spacing:.3em;text-align:center">
+    <input class="field" id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Ton code" style="font-size:22px;letter-spacing:.3em;text-align:center">
     <button class="btn" type="button" id="verify">Valider</button>
     <div class="row"><button class="link" type="button" id="resend">Renvoyer un code</button><button class="link" type="button" id="changeMail">Changer d'adresse</button></div>`;
   }
@@ -58,7 +58,7 @@ function bindAccount(sh) {
   });
   q('#verify') && (q('#verify').onclick = async e => {
     const code = q('#otp').value.replace(/\D/g, '');
-    if (code.length < 6) { toast('Le code fait 6 chiffres'); return; }
+    if (code.length < 6) { toast('Recopie le code complet reçu par e-mail'); return; }
     wait(e.target, 'Vérification…');
     try {
       const r = await cloud.verifyCode(acct.email, code);
