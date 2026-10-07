@@ -378,3 +378,4 @@ details.fold summary .muted{font-weight:400;font-size:13px;margin-left:auto}
 details.fold .moments{margin-top:10px}
 .syn .syncard:nth-child(2){grid-column:1/-1}
 .etile .k{text-transform:none}
+.tagline{font-family:var(--display);font-style:italic;color:var(--gold);font-size:17px;margin:-2px 0 12px}

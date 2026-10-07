@@ -1,4 +1,4 @@
-// Le guide « Mon Aurora » : une question à la fois pour personnaliser l'appli,
+// Le guide « Mon paramétrage » : une question à la fois pour personnaliser l'appli,
 // puis une conclusion à vérifier avant de valider. Rien n'est enregistré avant la validation.
 
 import { app, render, go } from '../app.js';
@@ -106,11 +106,11 @@ const themeName = (d, id) => (d.themes.find(t => t.id === id) || { name: '?' }).
 function stepHTML(id, d, g) {
   switch (id) {
     case 'intro':
-      return `<p class="g-eyebrow">Mon Aurora</p><h2>Faisons connaissance avec <em>ton rythme</em></h2>
-        <p class="lead">Quelques questions, une à la fois, pour qu'Aurora ressemble à ta vie : tes enfants s'il y en a, ton sport, tes moments fixes, tes catégories.</p>
+      return `<p class="g-eyebrow">Mon paramétrage</p><h2>Faisons connaissance avec <em>ton rythme</em></h2>
+        <p class="lead">Quelques questions, une à la fois, pour qu'Auror-Agenda ressemble à ta vie : tes enfants s'il y en a, ton sport, tes moments fixes, tes catégories.</p>
         <p class="lead">Compte deux à trois minutes. Tu peux passer une question, revenir en arrière, et tout modifier plus tard. Rien n'est enregistré avant que tu valides la conclusion.</p>`;
     case 'name':
-      return `<h2>Comment veux-tu qu'Aurora <em>t'appelle</em> ?</h2>
+      return `<h2>Comment veux-tu qu'Auror-Agenda <em>t'appelle</em> ?</h2>
         <p class="lead">Un prénom, un surnom, ou rien du tout.</p>
         <input type="text" id="gName" value="${esc(d.name)}" placeholder="Ton prénom" autocomplete="given-name" style="font-size:18px">`;
     case 'kids':
@@ -119,7 +119,7 @@ function stepHTML(id, d, g) {
         <div class="row"><button type="button" class="chip big" data-kids="1" aria-pressed="${d.kids === true}">Oui</button><button type="button" class="chip big" data-kids="0" aria-pressed="${d.kids === false}">Non</button></div>`;
     case 'custody':
       return `<h2>Les enfants sont-ils avec toi <em>toutes les semaines</em> ?</h2>
-        <p class="lead">En garde partagée, Aurora ne posera les moments avec eux que les jours où tu les as.</p>
+        <p class="lead">En garde partagée, Auror-Agenda ne posera les moments avec eux que les jours où tu les as.</p>
         <div class="stack"><button type="button" class="chip big" data-cm="always" aria-pressed="${d.custodyMode === 'always'}">Oui, toutes les semaines</button>
         <button type="button" class="chip big" data-cm="shared" aria-pressed="${d.custodyMode === 'shared'}">Garde partagée, en alternance sur deux semaines</button></div>`;
     case 'custodyGrid': {
@@ -196,10 +196,10 @@ function stepHTML(id, d, g) {
         <div class="row" style="margin-top:12px;flex-wrap:nowrap"><input type="text" id="gWbNew" placeholder="Ex. thé au jardin" style="flex:2;min-width:0"><select id="gWbDur" style="flex:1;min-width:0">${WB_DURATIONS.map(x => `<option value="${x}">${x} min</option>`).join('')}</select><button class="btn small" type="button" id="gWbAdd">Ajouter</button></div>`;
     case 'soir':
       return `<h2>À quelle heure veux-tu faire <em>le point du soir</em> ?</h2>
-        <p class="lead">Après cette heure, Aurora t'ouvrira directement sur le bilan de la journée : ce qui a été fait, ton ressenti, ton mot pour sortir.</p>
+        <p class="lead">Après cette heure, Auror-Agenda t'ouvrira directement sur le bilan de la journée : ce qui a été fait, ton ressenti, ton mot pour sortir.</p>
         <label class="f">Chaque soir à${timeField('gEve', d.eveningHour, 17 * 60, 23 * 60)}</label>
         <div class="card stack" style="margin-top:14px"><b style="font-weight:600">Un rappel sur ton téléphone ?</b>
-          <p class="lead" style="margin:0">Aurora ne peut pas sonner toute seule. Touche le bouton : ton téléphone propose d'ajouter un rappel quotidien à ton calendrier, à cette heure-là. Si tu changes l'heure plus tard, supprime l'ancien rappel du calendrier et ajoutes-en un nouveau.</p>
+          <p class="lead" style="margin:0">Auror-Agenda ne peut pas sonner tout seul. Touche le bouton : ton téléphone propose d'ajouter un rappel quotidien à ton calendrier, à cette heure-là. Si tu changes l'heure plus tard, supprime l'ancien rappel du calendrier et ajoutes-en un nouveau.</p>
           <div><button class="btn small" type="button" id="gIcs">Ajouter le rappel à mon calendrier</button></div></div>`;
     case 'recap': {
       const mon = mondayOf(today());
@@ -210,7 +210,7 @@ function stepHTML(id, d, g) {
       return `<p class="g-eyebrow">Conclusion</p><h2>Voici ce que j'ai <em>compris</em> de ton rythme</h2>
         <p class="lead">Vérifie avant de valider : c'est ce qui va organiser ton agenda.</p>
         <div class="stack">
-        ${sec('Toi', 'name', `<p class="lead" style="margin:0">${d.name ? `Aurora t'appellera <b style="color:var(--ivory)">${esc(d.name)}</b>.` : 'Pas de prénom.'}</p>`)}
+        ${sec('Toi', 'name', `<p class="lead" style="margin:0">${d.name ? `Auror-Agenda t'appellera <b style="color:var(--ivory)">${esc(d.name)}</b>.` : 'Pas de prénom.'}</p>`)}
         ${sec('Les enfants', 'kids', `<p class="lead" style="margin:0">${d.kids === true ? custodyTxt + (kidsRules.length ? kidsRules.map(ruleLine).join('<br>') : 'Des enfants, sans moment fixe pour l\'instant.') : d.kids === false ? 'Pas d\'enfants à la maison.' : 'Non renseigné.'}</p>`)}
         ${sec('Le sport', 'sport', `<p class="lead" style="margin:0">${d.sports.length ? esc(d.sports.join(', ')) + (sportRules.length ? '<br>' + sportRules.map(ruleLine).join('<br>') : '<br>Sans horaire fixe.') : 'Pas de sport pour l\'instant.'}</p>`)}
         ${sec('Autres moments fixes', 'fixed', `<p class="lead" style="margin:0">${other.length ? other.map(r => `${ruleLine(r)} <span style="color:var(--ivory-3)">(${esc(themeName(d, r.theme))})</span>`).join('<br>') : 'Aucun.'}</p>`)}

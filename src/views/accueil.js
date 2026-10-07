@@ -17,14 +17,14 @@ function installCard() {
   const how = isIOS()
     ? 'Dans Safari, touche le bouton Partager, puis « Sur l\'écran d\'accueil ».'
     : 'Dans le menu du navigateur, choisis « Installer l\'application » ou « Ajouter à l\'écran d\'accueil ».';
-  return `<div class="card stack" style="margin-top:16px;border-color:rgb(255 230 109 / .4)"><b style="font-weight:600">Installe Aurora sur ton téléphone</b><p class="lead" style="margin:0">${how} Elle s'ouvrira comme une appli, en plein écran.</p><div><button class="link" type="button" id="hideInstall">C'est fait, ne plus afficher</button></div></div>`;
+  return `<div class="card stack" style="margin-top:16px;border-color:rgb(255 230 109 / .4)"><b style="font-weight:600">Installe Auror-Agenda sur ton téléphone</b><p class="lead" style="margin:0">${how} Elle s'ouvrira comme une appli, en plein écran.</p><div><button class="link" type="button" id="hideInstall">C'est fait, ne plus afficher</button></div></div>`;
 }
 
 export function renderAccueil() {
   if (!hasAnyData()) {
-    return `<div class="emptyhero"><p class="home-hello">Bienvenue dans <em>Aurora</em></p>
+    return `<div class="emptyhero"><p class="home-hello">Bienvenue dans <em>Auror-Agenda</em></p><p class="tagline">le planner qui ne te juge pas</p>
     <p class="lead">Prévoir ta semaine, noter comment tu la vis, la relire en séance. Quelques minutes par jour, pas plus.</p>
-    <div class="stack" style="max-width:320px;margin:0 auto"><button class="btn" type="button" id="guideGo">Personnaliser Aurora · 3 min</button><button class="btn ghost" type="button" id="start">Planifier directement ma semaine</button><button class="btn ghost" type="button" id="sample">Découvrir avec une semaine d'exemple</button></div></div>${installCard()}`;
+    <div class="stack" style="max-width:320px;margin:0 auto"><button class="btn" type="button" id="guideGo">Personnaliser Auror-Agenda · 3 min</button><button class="btn ghost" type="button" id="start">Planifier directement ma semaine</button><button class="btn ghost" type="button" id="sample">Découvrir avec une semaine d'exemple</button></div></div>${installCard()}`;
   }
   const d = today(), m = nowMin(), r = ritual(d), wd = weekday(d);
   const ciToday = onDate('checkins', d).filter(c => !c.estimated).length;
@@ -48,14 +48,14 @@ export function renderAccueil() {
   const hello = m < 12 * 60 ? 'Bonjour' : m < 18 * 60 ? 'Bel après-midi' : 'Bonsoir';
   const name = S.profile.name ? ' ' + esc(S.profile.name) : '';
   let h = `<p class="home-hello">${hello}${name}, <em>par quoi on commence ?</em></p><p class="lead">L'étape mise en avant correspond au moment de la journée. Tu peux toujours choisir une autre porte.</p>`;
-  if (!S.profile.done) h += `<div class="card stack" style="border-color:rgb(255 230 109 / .45);margin-bottom:12px"><b style="font-weight:600">Fais d'Aurora ton agenda</b><p class="lead" style="margin:0">Quelques questions, une à la fois : tes enfants, ton sport, tes moments fixes, tes catégories. Les horaires fixes se poseront tout seuls dans ton agenda.</p><div><button class="btn small" type="button" id="guideGo">Personnaliser · 3 min</button></div></div>`;
+  if (!S.profile.done) h += `<div class="card stack" style="border-color:rgb(255 230 109 / .45);margin-bottom:12px"><b style="font-weight:600">Fais d'Auror-Agenda ton agenda</b><p class="lead" style="margin:0">Quelques questions, une à la fois : tes enfants, ton sport, tes moments fixes, tes catégories. Les horaires fixes se poseront tout seuls dans ton agenda.</p><div><button class="btn small" type="button" id="guideGo">Personnaliser · 3 min</button></div></div>`;
   if (S.isSample) h += `<div class="card" style="border-style:dashed"><p class="lead" style="margin:0">Tu regardes une semaine d'exemple. Quand tu es prête, efface-la depuis les réglages (roue en haut à droite).</p></div>`;
   h += `<div class="steps">`;
   steps.forEach(s => {
     if (s.grp) h += `<p class="grouplab">${s.grp}</p>`;
     h += `<button type="button" class="stepc ${s.k === rec ? 'now' : ''}" data-go="${s.k}" style="--hue:${s.hue}"><span class="ico" aria-hidden="true">${s.ic}</span><span>${s.k === rec ? '<span class="nowtag">Maintenant</span><br>' : ''}<span class="tt">${s.t}</span><div class="ss">${s.ss}</div></span><span class="st ${s.ok ? 'ok' : ''}">${s.st}</span></button>`;
   });
-  return h + `</div><p class="grouplab">Mon Aurora</p><div class="card stack" style="margin-top:10px"><p class="lead" style="margin:0">Tes catégories, tes moments fixes et le reste de ton paramétrage restent modifiables à tout moment.</p>${quickLinksHTML()}</div>${installCard()}`;
+  return h + `</div><p class="grouplab">Mon paramétrage</p><div class="card stack" style="margin-top:10px"><p class="lead" style="margin:0">Tes catégories, tes moments fixes et le reste de ton paramétrage restent modifiables à tout moment.</p>${quickLinksHTML()}</div>${installCard()}`;
 }
 
 export function bindAccueil(v) {

@@ -77,10 +77,10 @@ export function eveningIcs(minutes, appUrl) {
   const p = n => String(n).padStart(2, '0');
   const d = new Date(), ymd = `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}`;
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
-  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Nahara//Aurora//FR', 'CALSCALE:GREGORIAN', 'BEGIN:VEVENT',
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Nahara//Auror-Agenda//FR', 'CALSCALE:GREGORIAN', 'BEGIN:VEVENT',
     `UID:aurora-soir-${Date.now()}@nahara`, `DTSTAMP:${stamp}`, `DTSTART:${ymd}T${p(Math.floor(minutes / 60))}${p(minutes % 60)}00`, 'DURATION:PT5M', 'RRULE:FREQ=DAILY',
-    'SUMMARY:Aurora · le point du soir', `DESCRIPTION:Trois minutes pour clore la journée. ${appUrl}`, `URL:${appUrl}`,
-    'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:Aurora · le point du soir', 'TRIGGER:PT0M', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+    'SUMMARY:Auror-Agenda · le point du soir', `DESCRIPTION:Trois minutes pour clore la journée. ${appUrl}`, `URL:${appUrl}`,
+    'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:Auror-Agenda · le point du soir', 'TRIGGER:PT0M', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
 }
 
 export function download(filename, text, type = 'application/json') {

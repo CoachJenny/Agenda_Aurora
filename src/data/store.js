@@ -185,7 +185,7 @@ export function exportJSON() {
 export function importJSON(text) {
   const parsed = JSON.parse(text);
   const data = parsed && parsed.app === 'aurora' ? parsed.data : null;
-  if (!data || !Array.isArray(data.blocks)) throw new Error('Ce fichier ne vient pas d\'Aurora.');
+  if (!data || !Array.isArray(data.blocks)) throw new Error('Ce fichier ne vient pas d\'Auror-Agenda.');
   S = migrate({ ...empty(), ...data });
   save();
 }

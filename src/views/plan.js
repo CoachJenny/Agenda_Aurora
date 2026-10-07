@@ -26,7 +26,7 @@ export function renderPlan() {
      <label class="row"><input type="checkbox" data-ck="agendas" ${ck.agendas ? 'checked' : ''}> Ai-je vérifié Outlook, Google Agenda, Calendly ?</label>
      <label class="row"><input type="checkbox" data-ck="dejeuners" ${ck.dejeuners ? 'checked' : ''}> Ai-je des déjeuners prévus cette semaine ?</label>
      <label class="row"><input type="checkbox" data-ck="contraintes" ${ck.contraintes ? 'checked' : ''}> Contraintes enfants, sport, dîners, courses posés ?</label></div>
-     <h3>Mon Aurora</h3>${quickLinksHTML()}`;
+     <h3>Mon paramétrage</h3>${quickLinksHTML()}`;
     return h;
   }
   const locked = isLocked(date);
@@ -43,7 +43,7 @@ export function renderPlan() {
   }
   h += timelineHTML(date, 'plan');
   if (!locked) h += `<div class="row" style="margin-top:12px;justify-content:space-between"><span class="lead" style="margin:0">Glisse pour déplacer, tire le bas pour la durée</span><button class="btn small" type="button" data-act="add">+ Bloc</button></div>`;
-  h += `<h3>Mon Aurora</h3>${quickLinksHTML()}`;
+  h += `<h3>Mon paramétrage</h3>${quickLinksHTML()}`;
   return h;
 }
 

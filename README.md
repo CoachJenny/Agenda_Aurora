@@ -1,6 +1,8 @@
-# Aurora · Nahara
+# Auror-Agenda · Nahara
 
-Aurora est le journal de planification et de vécu des accompagnements Nahara, pour entrepreneures neuroatypiques.
+*Le planner qui ne te juge pas.*
+
+Auror-Agenda est le journal de planification et de vécu des accompagnements Nahara, pour entrepreneures neuroatypiques.
 On prévoit sa semaine, on note comment on la vit au fil des jours, et on la relit en séance.
 
 C'est une appli web installable (PWA) : elle s'ouvre depuis l'écran d'accueil du téléphone, en plein écran, sans passer par un store.

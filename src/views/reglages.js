@@ -10,7 +10,7 @@ export function openSettings() {
   openSheet(`<h4>Réglages et paramétrage</h4>
   <p class="lead" style="margin:0">Pour l'instant, ton journal est enregistré sur ce téléphone uniquement. Fais une sauvegarde de temps en temps : c'est ton filet de sécurité.</p>
   <div class="card stack">
-    <b style="font-weight:600">Mon Aurora</b>
+    <b style="font-weight:600">Mon paramétrage</b>
     <p class="lead" style="margin:0">Tes catégories, tes moments fixes, tes enfants, ton sport, tes moments bien-être.</p>
     <div><button class="btn small" type="button" id="guide">Personnaliser mon expérience</button></div>
   </div>
@@ -22,7 +22,7 @@ export function openSettings() {
     <div id="sampleZone"><button class="link" type="button" id="sample">Charger la semaine d'exemple</button></div>
     <div id="wipeZone"><button class="link danger" type="button" id="wipe">Tout effacer</button></div>
   </div>
-  <p class="lead" style="margin:0;font-size:12px">Aurora v0.9 · Nahara</p>
+  <p class="lead" style="margin:0;font-size:12px">Auror-Agenda v0.10 · le planner qui ne te juge pas · Nahara</p>
   <button class="btn ghost small" type="button" id="close">Fermer</button>`, sh => {
     const q = s => sh.querySelector(s);
     q('#close').onclick = closeSheet;

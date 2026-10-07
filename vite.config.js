@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/apple-touch-icon.png', 'icons/favicon.png'],
       manifest: {
-        name: 'Aurora · Nahara',
-        short_name: 'Aurora',
-        description: 'Prévoir, vivre, relire : le journal de tes journées.',
+        name: 'Auror-Agenda',
+        short_name: 'Auror-Agenda',
+        description: 'Le planner qui ne te juge pas. Prévoir, vivre, relire tes journées. Par Nahara.',
         lang: 'fr',
         start_url: '.',
         scope: '.',
