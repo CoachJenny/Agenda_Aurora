@@ -1,6 +1,7 @@
 // Vocabulaire de l'appli : thématiques, curseurs, facteurs. Tout le texte visible se règle ici.
 
-export const THEMES = [
+// Catégories proposées au départ ; chaque personne les renomme, recolore, retire ou complète dans le guide.
+export const DEFAULT_THEMES = [
   { id: 'travail', name: 'Travail', c: '--t-travail' },
   { id: 'client', name: 'RDV client', c: '--t-client' },
   { id: 'prospect', name: 'RDV prospect', c: '--t-prospect' },
@@ -12,7 +13,10 @@ export const THEMES = [
   { id: 'sorties', name: 'Sorties', c: '--t-sorties' },
   { id: 'bienetre', name: 'Bien-être', c: '--turq' }
 ];
-export const theme = id => THEMES.find(t => t.id === id) || THEMES[0];
+// Couleurs disponibles pour les catégories (jetons définis dans tokens.css)
+export const PALETTE = ['--t-travail', '--t-client', '--t-prospect', '--t-sport', '--t-enfants', '--t-libre', '--t-repas', '--t-maison', '--t-sorties', '--t-ciel', '--t-ambre', '--t-lilas', '--t-sauge', '--turq'];
+export const WEEKDAYS_SHORT = ['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di'];
+export const SPORTS = ['course', 'marche', 'yoga', 'natation', 'vélo', 'salle de sport', 'danse', 'pilates', 'escalade', 'arts martiaux'];
 
 // Des mots plutôt que des chiffres : 5 paliers par curseur, valeur stockée de 0 à 10.
 export const SLIDERS = [

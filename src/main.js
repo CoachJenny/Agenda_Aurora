@@ -16,6 +16,9 @@ import { renderRituels, bindRituels } from './views/rituels.js';
 import { renderSemaine, bindSemaine } from './views/semaine.js';
 import { renderPulse, initPulses } from './views/pulses.js';
 import { openSettings } from './views/reglages.js';
+import { renderGuide, bindGuide } from './views/guide.js';
+import { applyRecurring } from './data/store.js';
+import { mondayOf, addDays } from './lib/time.js';
 
 const VIEWS = {
   accueil: [renderAccueil, bindAccueil],
@@ -23,12 +26,17 @@ const VIEWS = {
   journee: [renderJournee, bindJournee],
   checkin: [renderCheckin, bindCheckin],
   rituels: [renderRituels, bindRituels],
-  semaine: [renderSemaine, bindSemaine]
+  semaine: [renderSemaine, bindSemaine],
+  guide: [renderGuide, bindGuide]
 };
 
 let lastTab = null;
 function render() {
   const v = $('view');
+  // Moments fixes : posés dans la semaine en cours, la suivante, et celle qu'on regarde
+  const mon = mondayOf(today());
+  [mon, addDays(mon, 7), mondayOf(app.selDate), app.weekStart].forEach(applyRecurring);
+  document.body.classList.toggle('in-guide', app.tab === 'guide');
   const [draw, bind] = VIEWS[app.tab] || VIEWS.accueil;
   v.innerHTML = draw();
   bind(v);

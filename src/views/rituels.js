@@ -2,7 +2,7 @@
 
 import { app, render, go } from '../app.js';
 import { S, save, uid, onDate, ritual, planBlocks, lockDay, isLocked, setStatus, setReplacement, realOf } from '../data/store.js';
-import { SLEEP, FACTORS, PRIO_HELD, wordOf, sliderName, theme } from '../data/constants.js';
+import { SLEEP, FACTORS, PRIO_HELD, wordOf, sliderName } from '../data/constants.js';
 import { hm, nowMin, today, H0 } from '../lib/time.js';
 import { esc, toast } from '../lib/ui.js';
 import { prioMirror, bindPrio, planDiffs, diffsHTML } from './shared.js';

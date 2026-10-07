@@ -1,8 +1,8 @@
 // État de l'appli, stocké sur le téléphone (localStorage).
 // Les collections reprennent la forme des futures tables Supabase : un enregistrement = une ligne, avec un id uuid et une date.
 
-import { DEFAULT_WB } from './constants.js';
-import { today, mondayOf, addDays, nowMin } from '../lib/time.js';
+import { DEFAULT_WB, DEFAULT_THEMES } from './constants.js';
+import { today, mondayOf, addDays, nowMin, weekDates } from '../lib/time.js';
 
 const KEY = 'aurora-journal-v1';
 const SCHEMA = 1;
@@ -22,6 +22,10 @@ const empty = () => ({
   checklists: {},    // lundi -> { agendas, dejeuners, contraintes }
   body: [],          // { id, tag, from, to }
   wbTags: DEFAULT_WB.map(t => ({ ...t })),
+  themes: DEFAULT_THEMES.map(t => ({ ...t })),   // catégories de l'agenda, personnalisables
+  recurring: [],     // moments fixes : { id, title, theme, days: [0..6], start, end }
+  recApplied: {},    // lundi -> [id des moments fixes déjà posés cette semaine-là]
+  profile: { done: false, name: '', kids: null, sports: [] },
   isSample: false
 });
 
@@ -38,6 +42,10 @@ function load() {
 function migrate(x) {
   x.blocks.forEach(b => { b.layer ??= 'plan'; });
   x.locked ??= {};
+  x.themes ??= DEFAULT_THEMES.map(t => ({ ...t }));
+  x.recurring ??= [];
+  x.recApplied ??= {};
+  x.profile ??= { done: false, name: '', kids: null, sports: [] };
   return x;
 }
 
@@ -60,6 +68,41 @@ export function weekPrios(monday) {
   return prev ? S.weekPrios[prev] : [];
 }
 export const dayPrios = date => S.dayPrios[date] || weekPrios(mondayOf(date));
+
+// ---------- Catégories ----------
+const FALLBACK = { id: 'autre', name: 'Autre', c: '--t-maison' };
+export const themes = () => S.themes;
+export const theme = id => S.themes.find(t => t.id === id) || DEFAULT_THEMES.find(t => t.id === id) || FALLBACK;
+
+// ---------- Moments fixes : posés automatiquement dans le plan, semaine après semaine ----------
+export function applyRecurring(monday) {
+  const applied = (S.recApplied[monday] ??= []);
+  let changed = false;
+  S.recurring.forEach(rule => {
+    if (applied.includes(rule.id)) return;
+    weekDates(monday).forEach((d, i) => {
+      if (!rule.days.includes(i) || d < today() || isLocked(d)) return;
+      if (S.blocks.some(b => b.ruleId === rule.id && b.date === d && b.layer !== 'real')) return;
+      S.blocks.push({ id: uid(), layer: 'plan', ruleId: rule.id, date: d, start: rule.start, end: rule.end, theme: rule.theme, title: rule.title, note: '', fixed: true });
+    });
+    applied.push(rule.id);
+    changed = true;
+  });
+  if (changed) save();
+}
+const ruleKey = r => JSON.stringify([r.title, r.theme, r.days, r.start, r.end]);
+// Remplace les moments fixes ; seuls ceux qui ont changé sont reposés dans les jours à venir.
+export function replaceRecurring(next) {
+  const nextById = Object.fromEntries(next.map(r => [r.id, r]));
+  const changedIds = S.recurring.filter(r => !nextById[r.id] || ruleKey(r) !== ruleKey(nextById[r.id])).map(r => r.id);
+  S.blocks = S.blocks.filter(b => !(b.ruleId && changedIds.includes(b.ruleId) && b.layer !== 'real' && b.date >= today() && !isLocked(b.date)));
+  const mon = mondayOf(today());
+  Object.keys(S.recApplied).forEach(k => { if (k >= mon) S.recApplied[k] = S.recApplied[k].filter(id => !changedIds.includes(id)); });
+  S.recurring = next;
+  applyRecurring(mon);
+  applyRecurring(addDays(mon, 7));
+  save();
+}
 
 // ---------- Prévu / réel ----------
 // Avant le début de la journée, on modifie le plan. Une fois la journée commencée (plan figé),

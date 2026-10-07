@@ -2,8 +2,7 @@
 // Une fois la journée commencée, son plan est figé (pour comparer) : le vécu se note dans Ma journée.
 
 import { app, render, go } from '../app.js';
-import { S, save, isLocked, effectiveBlocks, planBlocks } from '../data/store.js';
-import { theme } from '../data/constants.js';
+import { S, save, isLocked, effectiveBlocks, planBlocks, theme } from '../data/store.js';
 import { DAYS, DAYS_L, today, mondayOf, weekDates, addDays, dayNum, weekLabel } from '../lib/time.js';
 import { esc } from '../lib/ui.js';
 import { prioMirror, bindPrio } from './shared.js';

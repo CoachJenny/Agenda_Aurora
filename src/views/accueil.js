@@ -5,6 +5,7 @@ import { S, onDate, ritual, weekPrios, hasAnyData, loadSample, effectiveBlocks }
 import { nowMin, today, mondayOf, weekday } from '../lib/time.js';
 import { esc, toast } from '../lib/ui.js';
 import { render } from '../app.js';
+import { startGuide } from './guide.js';
 
 const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -23,7 +24,7 @@ export function renderAccueil() {
   if (!hasAnyData()) {
     return `<div class="emptyhero"><p class="home-hello">Bienvenue dans <em>Aurora</em></p>
     <p class="lead">Prévoir ta semaine, noter comment tu la vis, la relire en séance. Quelques minutes par jour, pas plus.</p>
-    <div class="stack" style="max-width:320px;margin:0 auto"><button class="btn" type="button" id="start">Planifier ma première semaine</button><button class="btn ghost" type="button" id="sample">Découvrir avec une semaine d'exemple</button></div></div>${installCard()}`;
+    <div class="stack" style="max-width:320px;margin:0 auto"><button class="btn" type="button" id="guideGo">Personnaliser Aurora · 3 min</button><button class="btn ghost" type="button" id="start">Planifier directement ma semaine</button><button class="btn ghost" type="button" id="sample">Découvrir avec une semaine d'exemple</button></div></div>${installCard()}`;
   }
   const d = today(), m = nowMin(), r = ritual(d), wd = weekday(d);
   const ciToday = onDate('checkins', d).filter(c => !c.estimated).length;
@@ -45,20 +46,24 @@ export function renderAccueil() {
     { k: 'recap', grp: 'Et ensuite', ic: '✦', hue: 'var(--coral)', t: 'Le récap de ma semaine', ss: "L'histoire en mots, l'aurore jour par jour", st: '' }
   ];
   const hello = m < 12 * 60 ? 'Bonjour' : m < 18 * 60 ? 'Bel après-midi' : 'Bonsoir';
-  let h = `<p class="home-hello">${hello}, <em>par quoi on commence ?</em></p><p class="lead">L'étape mise en avant correspond au moment de la journée. Tu peux toujours choisir une autre porte.</p>`;
+  const name = S.profile.name ? ' ' + esc(S.profile.name) : '';
+  let h = `<p class="home-hello">${hello}${name}, <em>par quoi on commence ?</em></p><p class="lead">L'étape mise en avant correspond au moment de la journée. Tu peux toujours choisir une autre porte.</p>`;
+  if (!S.profile.done) h += `<div class="card stack" style="border-color:rgb(255 230 109 / .45);margin-bottom:12px"><b style="font-weight:600">Fais d'Aurora ton agenda</b><p class="lead" style="margin:0">Quelques questions, une à la fois : tes enfants, ton sport, tes moments fixes, tes catégories. Les horaires fixes se poseront tout seuls dans ton agenda.</p><div><button class="btn small" type="button" id="guideGo">Personnaliser · 3 min</button></div></div>`;
   if (S.isSample) h += `<div class="card" style="border-style:dashed"><p class="lead" style="margin:0">Tu regardes une semaine d'exemple. Quand tu es prête, efface-la depuis les réglages (roue en haut à droite).</p></div>`;
   h += `<div class="steps">`;
   steps.forEach(s => {
     if (s.grp) h += `<p class="grouplab">${s.grp}</p>`;
     h += `<button type="button" class="stepc ${s.k === rec ? 'now' : ''}" data-go="${s.k}" style="--hue:${s.hue}"><span class="ico" aria-hidden="true">${s.ic}</span><span>${s.k === rec ? '<span class="nowtag">Maintenant</span><br>' : ''}<span class="tt">${s.t}</span><div class="ss">${s.ss}</div></span><span class="st ${s.ok ? 'ok' : ''}">${s.st}</span></button>`;
   });
-  return h + `</div>${installCard()}`;
+  return h + `</div><div style="margin-top:18px;text-align:center"><button class="link" type="button" id="guideGo2">Mon Aurora : catégories, moments fixes, préférences</button></div>${installCard()}`;
 }
 
 export function bindAccueil(v) {
   const q = s => v.querySelector(s);
+  q('#guideGo')?.addEventListener('click', startGuide);
   q('#start')?.addEventListener('click', () => go('plan', { planMode: 'semaine', weekStart: mondayOf(today()) }));
   q('#sample')?.addEventListener('click', () => { loadSample(); render(); toast("Semaine d'exemple chargée"); });
+  q('#guideGo2')?.addEventListener('click', startGuide);
   q('#hideInstall')?.addEventListener('click', () => { hideInstall = true; try { localStorage.setItem('aurora-hide-install', '1'); } catch (e) { /* rien */ } render(); });
   v.querySelectorAll('[data-go]').forEach(b => b.onclick = () => {
     const k = b.dataset.go, d = today();

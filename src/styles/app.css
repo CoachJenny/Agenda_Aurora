@@ -273,3 +273,22 @@ nav.tabs button{font-size:10.5px;padding:10px 2px 12px;white-space:nowrap}
 .timeline.review .block.locked{right:8px}
 .timeline.review .block.extra{left:auto;right:8px;width:46%;border-style:dotted;cursor:pointer;touch-action:auto;z-index:2}
 .timeline.review .block .n{color:var(--ivory-2)}
+
+/* --- v0.4 : guide « Mon Aurora » --- */
+body.in-guide .pulse{display:none}
+.guide{display:flex;flex-direction:column;gap:16px;padding-top:6px}
+.gprog{display:flex;gap:5px;margin-top:8px}
+.gprog span{flex:1;height:4px;border-radius:999px;background:var(--surface-2)}
+.gprog span.done{background:var(--violet)}
+.gprog span.cur{background:var(--btn-gradient)}
+.gbody h2{margin-top:6px}
+.g-eyebrow{font-family:var(--display);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--violet);margin:6px 0 0}
+.gnav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px}
+.gnav .btn:not(.ghost){flex:1;max-width:260px;margin-left:auto}
+.chip.big{padding:12px 26px;font-size:15px}
+.rule{display:flex;flex-direction:column;gap:10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.days7{gap:5px;flex-wrap:nowrap}
+.days7 .chip{flex:1;justify-content:center;padding:7px 0;font-size:12.5px;min-width:0}
+.trow{display:flex;align-items:center;gap:10px}
+.tdot{width:30px;height:30px;border-radius:50%;background:var(--c);border:2px solid var(--surface-2);flex:none;padding:0}
+.tlock{width:34px;text-align:center;color:var(--turq)}

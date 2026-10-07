@@ -5,9 +5,10 @@ On prévoit sa semaine, on note comment on la vit au fil des jours, et on la rel
 
 C'est une appli web installable (PWA) : elle s'ouvre depuis l'écran d'accueil du téléphone, en plein écran, sans passer par un store.
 
-## Ce que fait la version 0.1
+## Ce que fait l'appli
 
-- **Accueil** : guide vers l'étape qui correspond au moment (planifier la semaine, ouvrir la journée, check-in, clore la journée, récap).
+- **Accueil** : guide vers l'étape qui correspond au moment (planifier la semaine, ouvrir la journée, check-in, ma journée vécue, clore la journée, récap).
+- **Mon Aurora** (guide de personnalisation) : une question à la fois (prénom, enfants, sport, activités à horaires fixes, catégories, priorités, moments bien-être), puis une conclusion à vérifier. Les moments fixes se posent automatiquement dans le plan chaque semaine.
 - **Planifier** : le plan seul. Blocs étiquetés par thématique, déplaçables et redimensionnables au doigt, fixes ou flexibles ; priorités de la semaine et du jour ; checklist avant de planifier. Une fois la journée commencée, son plan est figé pour comparer.
 - **Ma journée** : le prévu et le réel côte à côte, séparés par le ruban d'énergie ; les écarts prévu → réel ; ce qui a compté, écrit en clair.
 - **Check-in** : six curseurs exprimés en mots, moment fort, échanges avec quelqu'un, « mon corps en ce moment ».

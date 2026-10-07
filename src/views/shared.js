@@ -1,7 +1,7 @@
 // Éléments communs à plusieurs écrans : rubans d'aurore, liste des moments, miroir des priorités.
 
-import { S, onDate, weekPrios, dayPrios, save, effectiveBlocks, planBlocks, realBlocks, realOf, bodyOn } from '../data/store.js';
-import { SLIDERS, THEMES, theme, socialText, sliderName, wordOf } from '../data/constants.js';
+import { S, onDate, weekPrios, dayPrios, save, effectiveBlocks, planBlocks, realBlocks, realOf, bodyOn, themes, theme } from '../data/store.js';
+import { SLIDERS, socialText, sliderName, wordOf } from '../data/constants.js';
 import { pct, hm, dur, today, mondayOf, DAYS_L, weekday, weekDates } from '../lib/time.js';
 import { esc, openSheet, closeSheet, toast } from '../lib/ui.js';
 import { render } from '../app.js';
@@ -124,7 +124,7 @@ export function editPrio(scope, date) {
   const monday = mondayOf(date);
   let sel = [...(scope === 'jour' ? dayPrios(date) : weekPrios(monday))];
   openSheet(`<h4>${scope === 'jour' ? 'Priorités du jour' : 'Priorités de la semaine'}</h4><p class="lead" style="margin:0">Jusqu'à 3 thématiques.</p>
-  <div class="row">${THEMES.map(t => `<button type="button" class="chip" data-p="${t.id}" aria-pressed="${sel.includes(t.id)}"><span class="dot" style="--c:var(${t.c})"></span>${t.name}</button>`).join('')}</div>
+  <div class="row">${themes().map(t => `<button type="button" class="chip" data-p="${t.id}" aria-pressed="${sel.includes(t.id)}"><span class="dot" style="--c:var(${t.c})"></span>${t.name}</button>`).join('')}</div>
   <button class="btn" type="button" id="pOk">Valider</button>`, sh => {
     sh.querySelectorAll('[data-p]').forEach(c => c.onclick = () => {
       const id = c.dataset.p;
