@@ -2,9 +2,9 @@
 // puis une conclusion à vérifier avant de valider. Rien n'est enregistré avant la validation.
 
 import { app, render, go } from '../app.js';
-import { S, save, uid, replaceRecurring, weekPrios } from '../data/store.js';
+import { S, save, uid, replaceRecurring, weekPrios, isKidsRule, ruleHalf } from '../data/store.js';
 import { DEFAULT_THEMES, PALETTE, WEEKDAYS_SHORT, SPORTS, WB_DURATIONS } from '../data/constants.js';
-import { H0, H1, hm, today, mondayOf, addDays, weekDates } from '../lib/time.js';
+import { H0, H1, hm, today, mondayOf, addDays, weekDates, weekLabel, DAYS_L, parse } from '../lib/time.js';
 import { esc, toast, timeField, onTime } from '../lib/ui.js';
 
 const clone = x => JSON.parse(JSON.stringify(x));
@@ -25,6 +25,8 @@ export function startGuide() {
     d: {
       name: S.profile.name || '',
       kids: S.profile.kids,
+      custodyMode: S.profile.custody ? 'shared' : S.profile.kids ? 'always' : null,
+      custody: clone(S.profile.custody),
       sports: [...(S.profile.sports || [])],
       rules: clone(S.recurring),
       themes: clone(S.themes),
@@ -40,6 +42,8 @@ const STEPS = [
   { id: 'intro' },
   { id: 'name' },
   { id: 'kids' },
+  { id: 'custody', when: d => d.kids === true },
+  { id: 'custodyGrid', when: d => d.kids === true && d.custodyMode === 'shared' },
   { id: 'kidsTimes', when: d => d.kids === true },
   { id: 'sport' },
   { id: 'sportTimes', when: d => d.sports.length > 0 },
@@ -52,14 +56,31 @@ const STEPS = [
 const visible = d => STEPS.filter(s => !s.when || s.when(d));
 
 // Un moment fixe, modifiable : titre, catégorie, jours, horaires
-function ruleEditor(r, d, { pickTheme = true, titleEditable = true } = {}) {
+function ruleEditor(r, d, { pickTheme = true, titleEditable = true, half = false } = {}) {
   return `<div class="rule" data-rule="${r.id}">
     <div class="row" style="flex-wrap:nowrap">${titleEditable ? `<input type="text" data-rt value="${esc(r.title)}" placeholder="Ex. cours de chant" style="flex:1;min-width:0">` : `<b style="flex:1;font-weight:600">${esc(r.title)}</b>`}
       <button type="button" class="iconbtn" data-rdel aria-label="Retirer ce moment" style="width:34px;height:34px;flex:none">✕</button></div>
     ${pickTheme ? `<label class="f">Catégorie<select data-rth>${d.themes.map(t => `<option value="${t.id}" ${t.id === r.theme ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select></label>` : ''}
     <div class="row days7">${WEEKDAYS_SHORT.map((w, i) => `<button type="button" class="chip" data-rday="${i}" aria-pressed="${r.days.includes(i)}">${w}</button>`).join('')}</div>
     <div class="row"><label class="f" style="flex:1">De${timeField('ra-' + r.id, r.start)}</label><label class="f" style="flex:1">À${timeField('rb-' + r.id, r.end)}</label></div>
+    ${half ? `<div class="f">Posé quand tu as les enfants<div class="seg" role="group" style="margin-top:6px"><button type="button" data-rhalf="0" aria-pressed="${ruleHalf(r) === 0}">le matin</button><button type="button" data-rhalf="1" aria-pressed="${ruleHalf(r) === 1}">le soir</button></div></div>` : ''}
   </div>`;
+}
+const emptyGrid = () => Array.from({ length: 7 }, () => [false, false]);
+const HALF = ['matin', 'soir'];
+function gridSummary(grid) {
+  const parts = grid.map((c, i) => c[0] && c[1] ? `${DAYS_L[i]} matin et soir` : c[0] ? `${DAYS_L[i]} matin` : c[1] ? `${DAYS_L[i]} soir` : '').filter(Boolean);
+  return parts.length ? parts.join(', ') : 'aucun moment';
+}
+// Semaine (A ou B) d'un lundi, d'après la référence en cours d'édition
+function draftWeekType(d, monday) {
+  if (!d.custody) return null;
+  const w = Math.round((parse(monday) - parse(d.custody.refMonday)) / (7 * 864e5));
+  return Math.abs(w) % 2 === 0 ? 'A' : 'B';
+}
+function draftApplies(d, r, date, i) {
+  if (!isKidsRule(r) || d.custodyMode !== 'shared' || !d.custody) return true;
+  return !!d.custody.grid[draftWeekType(d, mondayOf(date))][i][ruleHalf(r)];
 }
 const ruleLine = r => `${esc(r.title)} · ${r.days.length === 7 ? 'tous les jours' : r.days.map(i => WEEKDAYS_SHORT[i]).join(' ')} · ${hm(r.start)}–${hm(r.end)}`;
 const themeName = (d, id) => (d.themes.find(t => t.id === id) || { name: '?' }).name;
@@ -78,12 +99,27 @@ function stepHTML(id, d, g) {
       return `<h2>As-tu des <em>enfants</em> à la maison ?</h2>
         <p class="lead">Leurs horaires structurent souvent la journée. Autant les poser une fois pour toutes.</p>
         <div class="row"><button type="button" class="chip big" data-kids="1" aria-pressed="${d.kids === true}">Oui</button><button type="button" class="chip big" data-kids="0" aria-pressed="${d.kids === false}">Non</button></div>`;
+    case 'custody':
+      return `<h2>Les enfants sont-ils avec toi <em>toutes les semaines</em> ?</h2>
+        <p class="lead">En garde partagée, Aurora ne posera les moments avec eux que les jours où tu les as.</p>
+        <div class="stack"><button type="button" class="chip big" data-cm="always" aria-pressed="${d.custodyMode === 'always'}">Oui, toutes les semaines</button>
+        <button type="button" class="chip big" data-cm="shared" aria-pressed="${d.custodyMode === 'shared'}">Garde partagée, en alternance sur deux semaines</button></div>`;
+    case 'custodyGrid': {
+      const mon = mondayOf(today()), cur = draftWeekType(d, mon);
+      const grid = W => `<div class="card stack" style="padding:12px"><div class="row" style="justify-content:space-between"><b style="font-weight:600">Semaine ${W}</b>${cur === W ? '<span class="kv">cette semaine</span>' : '<span class="kv">semaine prochaine</span>'}</div>
+        <div class="cgrid">${DAYS_L.map((dl, i) => `<span class="cgd">${dl}</span>${[0, 1].map(h => `<button type="button" class="chip" data-cg="${W}-${i}-${h}" aria-pressed="${d.custody.grid[W][i][h]}">${HALF[h]}</button>`).join('')}`).join('')}</div></div>`;
+      return `<h2>Ton rythme de <em>garde</em></h2>
+        <p class="lead">Cette semaine, du ${weekLabel(mon)}, c'est…</p>
+        <div class="row"><button type="button" class="chip big" data-ab="A" aria-pressed="${cur === 'A'}">une semaine A</button><button type="button" class="chip big" data-ab="B" aria-pressed="${cur === 'B'}">une semaine B</button></div>
+        <p class="lead" style="margin-top:14px">Coche les matins et les soirs où tu as tes enfants. Par exemple, si tu les récupères le vendredi soir et les déposes à l'école le lundi suivant : vendredi soir, samedi et dimanche matin et soir, puis lundi matin de l'autre semaine.</p>
+        <div class="stack">${grid('A')}${grid('B')}</div>`;
+    }
     case 'kidsTimes': {
-      const kidRules = d.rules.filter(r => r.theme === 'enfants');
+      const kidRules = d.rules.filter(isKidsRule), shared = d.custodyMode === 'shared';
       return `<h2>Quels <em>moments fixes</em> avec eux ?</h2>
-        <p class="lead">Touche ce qui existe chez toi, puis ajuste les jours et les heures. Ces moments seront posés automatiquement dans ton agenda chaque semaine.</p>
+        <p class="lead">Touche ce qui existe chez toi, puis ajuste les jours et les heures. Ces moments seront posés automatiquement dans ton agenda${shared ? ', seulement les matins ou les soirs où tu as tes enfants' : ' chaque semaine'}.</p>
         <div class="row">${KID_PRESETS.map(p => `<button type="button" class="chip" data-kp="${p.key}" aria-pressed="${kidRules.some(r => r.preset === p.key)}">${p.title}</button>`).join('')}</div>
-        <div class="stack" style="margin-top:14px">${kidRules.map(r => ruleEditor(r, d, { pickTheme: false })).join('')}</div>
+        <div class="stack" style="margin-top:14px">${kidRules.map(r => ruleEditor(r, d, { pickTheme: false, half: shared })).join('')}</div>
         <button class="link" type="button" data-addrule="enfants" style="margin-top:12px">+ Un autre moment avec les enfants</button>`;
     }
     case 'sport':
@@ -102,7 +138,7 @@ function stepHTML(id, d, g) {
         }).join('')}</div>`;
     }
     case 'fixed': {
-      const other = d.rules.filter(r => r.theme !== 'enfants' && !r.sport);
+      const other = d.rules.filter(r => !isKidsRule(r) && !r.sport);
       return `<h2>D'autres activités à <em>horaires fixes</em> ?</h2>
         <p class="lead">Un cours, une chorale, un rendez-vous chaque semaine, une permanence, un créneau que tu protèges… Tout ce qui revient au même moment.</p>
         <div class="stack">${other.map(r => ruleEditor(r, d)).join('') || '<p class="empty">Aucun pour l\'instant.</p>'}</div>
@@ -128,14 +164,15 @@ function stepHTML(id, d, g) {
         <div class="row" style="margin-top:12px;flex-wrap:nowrap"><input type="text" id="gWbNew" placeholder="Ex. thé au jardin" style="flex:2;min-width:0"><select id="gWbDur" style="flex:1;min-width:0">${WB_DURATIONS.map(x => `<option value="${x}">${x} min</option>`).join('')}</select><button class="btn small" type="button" id="gWbAdd">Ajouter</button></div>`;
     case 'recap': {
       const mon = mondayOf(today());
-      const count = d.rules.reduce((n, r) => n + weekDates(mon).filter((dd, i) => r.days.includes(i) && dd >= today()).length, 0);
+      const count = d.rules.reduce((n, r) => n + weekDates(mon).filter((dd, i) => r.days.includes(i) && dd >= today() && draftApplies(d, r, dd, i)).length, 0);
       const sec = (title, step, body) => `<div class="card stack"><div class="row" style="justify-content:space-between"><b style="font-weight:600">${title}</b><button class="link" type="button" data-jump="${step}">Modifier</button></div>${body}</div>`;
-      const kidsRules = d.rules.filter(r => r.theme === 'enfants'), sportRules = d.rules.filter(r => r.sport), other = d.rules.filter(r => r.theme !== 'enfants' && !r.sport);
+      const kidsRules = d.rules.filter(isKidsRule), sportRules = d.rules.filter(r => r.sport), other = d.rules.filter(r => !isKidsRule(r) && !r.sport);
+      const custodyTxt = d.kids === true && d.custodyMode === 'shared' && d.custody ? `<b style="color:var(--ivory)">Garde partagée</b> (cette semaine est une semaine ${draftWeekType(d, mon)})<br>Semaine A : ${gridSummary(d.custody.grid.A)}<br>Semaine B : ${gridSummary(d.custody.grid.B)}<br>` : '';
       return `<p class="g-eyebrow">Conclusion</p><h2>Voici ce que j'ai <em>compris</em> de ton rythme</h2>
         <p class="lead">Vérifie avant de valider : c'est ce qui va organiser ton agenda.</p>
         <div class="stack">
         ${sec('Toi', 'name', `<p class="lead" style="margin:0">${d.name ? `Aurora t'appellera <b style="color:var(--ivory)">${esc(d.name)}</b>.` : 'Pas de prénom.'}</p>`)}
-        ${sec('Les enfants', 'kids', `<p class="lead" style="margin:0">${d.kids === true ? (kidsRules.length ? kidsRules.map(ruleLine).join('<br>') : 'Des enfants, sans moment fixe pour l\'instant.') : d.kids === false ? 'Pas d\'enfants à la maison.' : 'Non renseigné.'}</p>`)}
+        ${sec('Les enfants', 'kids', `<p class="lead" style="margin:0">${d.kids === true ? custodyTxt + (kidsRules.length ? kidsRules.map(ruleLine).join('<br>') : 'Des enfants, sans moment fixe pour l\'instant.') : d.kids === false ? 'Pas d\'enfants à la maison.' : 'Non renseigné.'}</p>`)}
         ${sec('Le sport', 'sport', `<p class="lead" style="margin:0">${d.sports.length ? esc(d.sports.join(', ')) + (sportRules.length ? '<br>' + sportRules.map(ruleLine).join('<br>') : '<br>Sans horaire fixe.') : 'Pas de sport pour l\'instant.'}</p>`)}
         ${sec('Autres moments fixes', 'fixed', `<p class="lead" style="margin:0">${other.length ? other.map(r => `${ruleLine(r)} <span style="color:var(--ivory-3)">(${esc(themeName(d, r.theme))})</span>`).join('<br>') : 'Aucun.'}</p>`)}
         ${sec('Tes catégories', 'themes', `<div class="row">${d.themes.map(t => `<span class="chip" style="cursor:default"><span class="dot" style="--c:var(${t.c})"></span>${esc(t.name)}</span>`).join('')}</div>`)}
@@ -187,19 +224,36 @@ export function bindGuide(v) {
   // Enfants
   v.querySelectorAll('[data-kids]').forEach(b => b.onclick = () => {
     d.kids = b.dataset.kids === '1';
-    if (!d.kids) d.rules = d.rules.filter(r => r.theme !== 'enfants');
+    if (!d.kids) { d.rules = d.rules.filter(r => !isKidsRule(r)); d.custodyMode = null; }
+    else if (!d.custodyMode) d.custodyMode = 'always';
     rerender();
+  });
+  v.querySelectorAll('[data-cm]').forEach(b => b.onclick = () => {
+    d.custodyMode = b.dataset.cm;
+    if (d.custodyMode === 'shared' && !d.custody) d.custody = { refMonday: mondayOf(today()), grid: { A: emptyGrid(), B: emptyGrid() } };
+    rerender();
+  });
+  v.querySelectorAll('[data-ab]').forEach(b => b.onclick = () => {
+    const mon = mondayOf(today());
+    d.custody.refMonday = b.dataset.ab === 'A' ? mon : addDays(mon, -7);
+    rerender();
+  });
+  v.querySelectorAll('[data-cg]').forEach(b => b.onclick = () => {
+    const [W, i, h] = b.dataset.cg.split('-');
+    const cell = d.custody.grid[W][+i];
+    cell[+h] = !cell[+h];
+    b.setAttribute('aria-pressed', cell[+h]);
   });
   v.querySelectorAll('[data-kp]').forEach(b => b.onclick = () => {
     const p = KID_PRESETS.find(x => x.key === b.dataset.kp);
     const ex = d.rules.find(r => r.preset === p.key);
     if (ex) d.rules = d.rules.filter(r => r !== ex);
-    else d.rules.push({ id: uid(), preset: p.key, title: p.title, theme: 'enfants', days: [...p.days], start: p.start, end: p.end });
+    else d.rules.push({ id: uid(), preset: p.key, kids: true, title: p.title, theme: 'enfants', days: [...p.days], start: p.start, end: p.end });
     rerender();
   });
   v.querySelectorAll('[data-addrule]').forEach(b => b.onclick = () => {
     const th = b.dataset.addrule === 'enfants' ? 'enfants' : (d.themes.find(t => t.id === 'travail') || d.themes[0]).id;
-    d.rules.push({ id: uid(), title: '', theme: th, days: [], start: 18 * 60, end: 19 * 60 });
+    d.rules.push({ id: uid(), kids: b.dataset.addrule === 'enfants', title: '', theme: th, days: [], start: 18 * 60, end: 19 * 60 });
     rerender();
   });
   // Sport
@@ -224,6 +278,7 @@ export function bindGuide(v) {
     const r = d.rules.find(x => x.id === el.dataset.rule);
     el.querySelector('[data-rt]')?.addEventListener('input', e => (r.title = e.target.value));
     el.querySelector('[data-rth]')?.addEventListener('change', e => (r.theme = e.target.value));
+    el.querySelectorAll('[data-rhalf]').forEach(c => c.onclick = () => { r.half = +c.dataset.rhalf; rerender(); });
     el.querySelector('[data-rdel]').onclick = () => { d.rules = d.rules.filter(x => x !== r); rerender(); };
     el.querySelectorAll('[data-rday]').forEach(c => c.onclick = () => {
       const i = +c.dataset.rday;
@@ -273,11 +328,13 @@ function commit(d) {
   const rules = d.rules
     .filter(r => r.days.length && r.end > r.start)
     .map(r => ({ ...r, title: r.title.trim() || themeName(d, r.theme) }));
-  S.profile = { done: true, name: d.name, kids: d.kids, sports: d.sports };
+  const custody = d.kids === true && d.custodyMode === 'shared' ? d.custody : null;
+  const custodyChanged = JSON.stringify(custody) !== JSON.stringify(S.profile.custody || null);
+  S.profile = { done: true, name: d.name, kids: d.kids, sports: d.sports, custody };
   S.themes = d.themes.map(t => ({ ...t, name: t.name.trim() || 'Sans nom' }));
   S.wbTags = d.wbTags;
   S.weekPrios[mondayOf(today())] = d.prios;
-  replaceRecurring(rules);
+  replaceRecurring(rules, custodyChanged ? rules.filter(isKidsRule).map(r => r.id) : []);
   save();
   app.guide = null;
   const skipped = d.rules.length - rules.length;

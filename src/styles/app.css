@@ -292,3 +292,20 @@ body.in-guide .pulse{display:none}
 .trow{display:flex;align-items:center;gap:10px}
 .tdot{width:30px;height:30px;border-radius:50%;background:var(--c);border:2px solid var(--surface-2);flex:none;padding:0}
 .tlock{width:34px;text-align:center;color:var(--turq)}
+
+/* --- v0.5 : garde partagée, jours cliquables --- */
+.wab{font-weight:600;color:var(--t-enfants)}
+.custline{font-size:13px;color:var(--ivory-2);margin:0 0 10px}
+.kbar{display:flex;gap:2px;justify-content:center;margin-top:4px}
+.kbar i{width:12px;height:4px;border-radius:2px;background:var(--surface-2)}
+.kbar i.on{background:var(--t-enfants)}
+.cgrid{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px 8px;align-items:center}
+.cgd{font-size:14px;text-transform:capitalize}
+.cgrid .chip{padding:6px 14px;font-size:13px;justify-content:center}
+.dlink{width:100%;background:none;border:0;padding:0;color:inherit;text-align:left;cursor:pointer;display:flex;align-items:baseline;gap:10px}
+.dlink .dn{flex:none}
+.dlink .ws{flex:1}
+.dgo{color:var(--ivory-3);font-size:18px;line-height:1}
+.wab{white-space:nowrap}
+.card label.row{flex-wrap:nowrap;align-items:flex-start}
+.card label.row input[type=checkbox]{flex:none;margin-top:2px}

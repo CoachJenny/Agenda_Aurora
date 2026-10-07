@@ -2,7 +2,7 @@
 // Les collections reprennent la forme des futures tables Supabase : un enregistrement = une ligne, avec un id uuid et une date.
 
 import { DEFAULT_WB, DEFAULT_THEMES } from './constants.js';
-import { today, mondayOf, addDays, nowMin, weekDates } from '../lib/time.js';
+import { today, mondayOf, addDays, nowMin, weekDates, weekday, parse } from '../lib/time.js';
 
 const KEY = 'aurora-journal-v1';
 const SCHEMA = 1;
@@ -25,7 +25,8 @@ const empty = () => ({
   themes: DEFAULT_THEMES.map(t => ({ ...t })),   // catégories de l'agenda, personnalisables
   recurring: [],     // moments fixes : { id, title, theme, days: [0..6], start, end }
   recApplied: {},    // lundi -> [id des moments fixes déjà posés cette semaine-là]
-  profile: { done: false, name: '', kids: null, sports: [] },
+  profile: { done: false, name: '', kids: null, sports: [], custody: null },
+  // custody : { refMonday: lundi d'une semaine A, grid: { A: [[matin, soir] × 7], B: [...] } } en garde partagée
   isSample: false
 });
 
@@ -74,6 +75,23 @@ const FALLBACK = { id: 'autre', name: 'Autre', c: '--t-maison' };
 export const themes = () => S.themes;
 export const theme = id => S.themes.find(t => t.id === id) || DEFAULT_THEMES.find(t => t.id === id) || FALLBACK;
 
+// ---------- Garde partagée : semaines A et B, matins et soirs avec les enfants ----------
+export function weekType(monday) {
+  const c = S.profile.custody;
+  if (!c) return null;
+  const weeks = Math.round((parse(monday) - parse(c.refMonday)) / (7 * 864e5));
+  return Math.abs(weeks) % 2 === 0 ? 'A' : 'B';
+}
+// half : 0 = matin, 1 = soir. Sans garde partagée, les enfants sont toujours là.
+export function kidsPresent(date, half) {
+  const c = S.profile.custody;
+  if (!c) return true;
+  return !!c.grid[weekType(mondayOf(date))][weekday(date)][half];
+}
+export const isKidsRule = r => !!r.kids || r.theme === 'enfants';
+export const ruleHalf = r => r.half ?? (r.start < 12 * 60 ? 0 : 1);
+const ruleApplies = (r, date) => !isKidsRule(r) || kidsPresent(date, ruleHalf(r));
+
 // ---------- Moments fixes : posés automatiquement dans le plan, semaine après semaine ----------
 export function applyRecurring(monday) {
   const applied = (S.recApplied[monday] ??= []);
@@ -81,7 +99,7 @@ export function applyRecurring(monday) {
   S.recurring.forEach(rule => {
     if (applied.includes(rule.id)) return;
     weekDates(monday).forEach((d, i) => {
-      if (!rule.days.includes(i) || d < today() || isLocked(d)) return;
+      if (!rule.days.includes(i) || d < today() || isLocked(d) || !ruleApplies(rule, d)) return;
       if (S.blocks.some(b => b.ruleId === rule.id && b.date === d && b.layer !== 'real')) return;
       S.blocks.push({ id: uid(), layer: 'plan', ruleId: rule.id, date: d, start: rule.start, end: rule.end, theme: rule.theme, title: rule.title, note: '', fixed: true });
     });
@@ -90,11 +108,11 @@ export function applyRecurring(monday) {
   });
   if (changed) save();
 }
-const ruleKey = r => JSON.stringify([r.title, r.theme, r.days, r.start, r.end]);
+const ruleKey = r => JSON.stringify([r.title, r.theme, r.days, r.start, r.end, r.half ?? null]);
 // Remplace les moments fixes ; seuls ceux qui ont changé sont reposés dans les jours à venir.
-export function replaceRecurring(next) {
+export function replaceRecurring(next, forceIds = []) {
   const nextById = Object.fromEntries(next.map(r => [r.id, r]));
-  const changedIds = S.recurring.filter(r => !nextById[r.id] || ruleKey(r) !== ruleKey(nextById[r.id])).map(r => r.id);
+  const changedIds = [...S.recurring.filter(r => !nextById[r.id] || ruleKey(r) !== ruleKey(nextById[r.id])).map(r => r.id), ...forceIds];
   S.blocks = S.blocks.filter(b => !(b.ruleId && changedIds.includes(b.ruleId) && b.layer !== 'real' && b.date >= today() && !isLocked(b.date)));
   const mon = mondayOf(today());
   Object.keys(S.recApplied).forEach(k => { if (k >= mon) S.recApplied[k] = S.recApplied[k].filter(id => !changedIds.includes(id)); });

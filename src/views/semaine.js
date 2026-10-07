@@ -1,7 +1,7 @@
 // Ma semaine : la vue de séance. L'outil montre, la cliente fait les liens.
 
-import { app, render } from '../app.js';
-import { S, onDate, bodyOn, planBlocks } from '../data/store.js';
+import { app, render, go } from '../app.js';
+import { S, onDate, bodyOn, planBlocks, weekType } from '../data/store.js';
 import { DAYS, DAYS_L, dur, pct, today, weekDates, addDays, dayNum, cap, weekLabel, mondayOf } from '../lib/time.js';
 import { esc, energyCol, emoCol } from '../lib/ui.js';
 import { auroraGradient, impactRows, impactHTML, planDiffs, diffsHTML, diffSummary } from './shared.js';
@@ -20,7 +20,7 @@ export function renderSemaine() {
   days.forEach((d, i) => { const r = S.rituals[d]; if (r && (r.open || r.close)) story += `<span class="d">${DAYS[i]}</span><span class="w">${esc(r.open || '…')}</span><span class="ar">→</span><span class="w c">${esc(r.close || '…')}</span>`; });
 
   let h = `<h2>Ma <em>semaine</em></h2>
-  <div class="weeknav"><button type="button" data-wk="-1" aria-label="Semaine précédente">‹</button><span class="wl">Semaine du ${weekLabel(app.weekStart)}</span><button type="button" data-wk="1" aria-label="Semaine suivante">›</button></div>
+  <div class="weeknav"><button type="button" data-wk="-1" aria-label="Semaine précédente">‹</button><span class="wl">Semaine du ${weekLabel(app.weekStart)}${weekType(app.weekStart) ? ` · <b class="wab">semaine ${weekType(app.weekStart)}</b>` : ''}</span><button type="button" data-wk="1" aria-label="Semaine suivante">›</button></div>
   <p class="lead" style="margin-top:12px">À regarder ensemble en séance. L'outil montre, c'est toi qui fais les liens.</p>
   <h3>L'histoire en mots</h3><div class="card">${story ? `<div class="story">${story}</div>` : '<p class="empty" style="margin:0">Les mots du matin et du soir apparaîtront ici.</p>'}</div>
   <h3>En un coup d'œil</h3><div class="tiles">
@@ -34,7 +34,7 @@ export function renderSemaine() {
     const r = S.rituals[d] || {}, cs = onDate('checkins', d), mo = impactRows(d), diffs = planDiffs(d).filter(x => x.kind !== 'ok'), sum = diffSummary(d);
     const any = cs.length || mo.length || diffs.length || sum || r.open || r.close;
     const ws = (r.open || r.close) ? `${esc(r.open || '…')}<span>→</span>${esc(r.close || '…')}` : '';
-    h += `<div class="dcard ${d === today() ? 'today' : ''}"><div class="dtop"><span class="dn">${cap(DAYS_L[days.indexOf(d)])}<span>${dayNum(d)}</span></span><span class="ws">${ws}</span></div>`;
+    h += `<div class="dcard ${d === today() ? 'today' : ''}"><button type="button" class="dtop dlink" data-goday="${d}" aria-label="Voir le prévu et le réel de ${DAYS_L[days.indexOf(d)]} ${dayNum(d)}"><span class="dn">${cap(DAYS_L[days.indexOf(d)])}<span>${dayNum(d)}</span></span><span class="ws">${ws}</span><span class="dgo">›</span></button>`;
     if (!any) { h += `<p class="empty" style="margin:8px 0 0">${d > today() ? 'À venir' : 'Rien de noté'}</p></div>`; return; }
     const bd = bodyOn(d);
     if (bd) h += `<div class="bodyctx" style="margin-top:10px;padding:5px 10px;font-size:12px"><span class="dot" style="--c:var(--t-enfants)"></span>Mon corps : ${esc(bd.tag)}</div>`;
@@ -45,6 +45,7 @@ export function renderSemaine() {
     if (sum || diffs.length) h += `<p class="sublab">Prévu → réel${sum ? ` · <span>${sum}</span>` : ''}</p>${diffs.length ? `<div class="moments">${diffsHTML(diffs)}</div>` : ''}`;
     if (mo.length) h += `<p class="sublab">Ce qui a compté</p><div class="moments">${impactHTML(mo)}</div>`;
     if (r.debrief) h += `<p class="lead" style="margin:10px 0 0;font-style:italic">« ${esc(r.debrief)} »</p>`;
+    if (d <= today()) h += `<button class="link" type="button" data-goday="${d}" style="margin-top:10px">Voir le prévu et le réel ›</button>`;
     h += `</div>`;
   });
   h += `</div>`;
@@ -57,6 +58,7 @@ export function renderSemaine() {
 }
 
 export function bindSemaine(v) {
+  v.querySelectorAll('[data-goday]').forEach(b => b.onclick = () => go('journee', { selDate: b.dataset.goday }));
   v.querySelectorAll('[data-wk]').forEach(b => b.onclick = () => { app.weekStart = addDays(app.weekStart, 7 * +b.dataset.wk); render(); });
 }
 
