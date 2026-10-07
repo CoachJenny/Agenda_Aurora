@@ -1,7 +1,7 @@
 // Réglages : sauvegarde, restauration, exemple, effacement.
 
 import { render, go } from '../app.js';
-import { S, exportJSON, importJSON, loadSample, resetAll } from '../data/store.js';
+import { S, exportJSON, importJSON, resetAll } from '../data/store.js';
 import { today } from '../lib/time.js';
 import { startGuide } from './guide.js';
 import { openSheet, closeSheet, toast, download } from '../lib/ui.js';
@@ -19,10 +19,9 @@ export function openSettings() {
     <label class="btn ghost" style="text-align:center;cursor:pointer">Restaurer une sauvegarde<input type="file" id="imp" accept="application/json,.json" hidden></label>
   </div>
   <div class="card stack">
-    <div id="sampleZone"><button class="link" type="button" id="sample">Charger la semaine d'exemple</button></div>
     <div id="wipeZone"><button class="link danger" type="button" id="wipe">Tout effacer</button></div>
   </div>
-  <p class="lead" style="margin:0;font-size:12px">Auror-Agenda v0.10 · le planner qui ne te juge pas · Nahara</p>
+  <p class="lead" style="margin:0;font-size:12px">Auror-Agenda v0.11 · le planner qui ne te juge pas · Nahara</p>
   <button class="btn ghost small" type="button" id="close">Fermer</button>`, sh => {
     const q = s => sh.querySelector(s);
     q('#close').onclick = closeSheet;
@@ -38,7 +37,6 @@ export function openSettings() {
       q(zone + ' [data-yes]').onclick = action;
       q(zone + ' [data-no]').onclick = () => { closeSheet(); openSettings(); };
     };
-    q('#sample').onclick = () => confirmIn('#sampleZone', S.isSample || !S.blocks.length ? "La semaine d'exemple remplace le contenu actuel." : 'Attention : la semaine d\'exemple remplace ton journal actuel. Télécharge une sauvegarde avant si besoin.', 'Charger', () => { loadSample(); closeSheet(); go('accueil'); toast("Semaine d'exemple chargée"); });
     q('#wipe').onclick = () => confirmIn('#wipeZone', 'Tout ton journal sera effacé de ce téléphone. Cette action ne peut pas être annulée.', 'Tout effacer', () => { resetAll(); closeSheet(); go('accueil'); toast('Journal effacé'); });
   });
 }
