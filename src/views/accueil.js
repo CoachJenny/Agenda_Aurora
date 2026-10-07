@@ -43,7 +43,7 @@ export function renderAccueil() {
     { k: 'checkin', ic: '≈', hue: 'var(--turq)', t: 'Faire un check-in', ss: "Où j'en suis, là, maintenant · 30 s", st: ciToday ? `${ciToday} aujourd'hui` : 'aucun encore', ok: ciToday > 0 },
     { k: 'vecu', ic: '◐', hue: 'var(--coral)', t: 'Ma journée vécue', ss: 'Comparer le prévu et le réel', st: '' },
     { k: 'soir', ic: '☾', hue: 'var(--violet)', t: 'Clore la journée', ss: 'Ce qui a bougé, un mot pour sortir · 3 min', st: closed ? (r.close ? `« ${esc(r.close)} »` : 'fait') : 'ce soir', ok: closed },
-    { k: 'recap', grp: 'Et ensuite', ic: '✦', hue: 'var(--coral)', t: 'Le récap de ma semaine', ss: "L'histoire en mots, l'aurore jour par jour", st: '' }
+    { k: 'recap', grp: 'Et ensuite', ic: '✦', hue: 'var(--coral)', t: 'Ma synthèse', ss: 'Tes priorités, ta semaine, ton journal', st: '' }
   ];
   const hello = m < 12 * 60 ? 'Bonjour' : m < 18 * 60 ? 'Bel après-midi' : 'Bonsoir';
   const name = S.profile.name ? ' ' + esc(S.profile.name) : '';
@@ -73,6 +73,6 @@ export function bindAccueil(v) {
     else if (k === 'soir') go('rituels', { ritMode: 'soir' });
     else if (k === 'checkin') go('checkin');
     else if (k === 'vecu') go('journee', { selDate: d });
-    else go('semaine', { weekStart: mondayOf(d) });
+    else go('synthese');
   });
 }

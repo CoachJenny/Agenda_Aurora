@@ -17,6 +17,8 @@ import { renderSemaine, bindSemaine } from './views/semaine.js';
 import { renderPulse, initPulses } from './views/pulses.js';
 import { openSettings } from './views/reglages.js';
 import { renderGuide, bindGuide } from './views/guide.js';
+import { renderSynthese, bindSynthese } from './views/synthese.js';
+import { renderJournal, bindJournal } from './views/journal.js';
 import { applyRecurring, landing } from './data/store.js';
 import { mondayOf, addDays } from './lib/time.js';
 
@@ -27,7 +29,8 @@ const VIEWS = {
   checkin: [renderCheckin, bindCheckin],
   rituels: [renderRituels, bindRituels],
   semaine: [renderSemaine, bindSemaine],
-  synthese: [renderSemaine, bindSemaine],
+  synthese: [renderSynthese, bindSynthese],
+  journal: [renderJournal, bindJournal],
   guide: [renderGuide, bindGuide]
 };
 

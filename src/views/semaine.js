@@ -19,7 +19,7 @@ export function renderSemaine() {
   let story = '';
   days.forEach((d, i) => { const r = S.rituals[d]; if (r && (r.open || r.close)) story += `<span class="d">${DAYS[i]}</span><span class="w">${esc(r.open || '…')}</span><span class="ar">→</span><span class="w c">${esc(r.close || '…')}</span>`; });
 
-  let h = `<h2>Ma <em>semaine</em></h2>
+  let h = `<button class="link" type="button" id="sBack" style="margin-top:10px">‹ Synthèse</button><h2>Ma <em>semaine</em></h2>
   <div class="weeknav"><button type="button" data-wk="-1" aria-label="Semaine précédente">‹</button><span class="wl">Semaine du ${weekLabel(app.weekStart)}${weekType(app.weekStart) ? ` · <b class="wab">semaine ${weekType(app.weekStart)}</b>` : ''}</span><button type="button" data-wk="1" aria-label="Semaine suivante">›</button></div>
   <p class="lead" style="margin-top:12px">À regarder ensemble en séance. L'outil montre, c'est toi qui fais les liens.</p>
   <h3>L'histoire en mots</h3><div class="card">${story ? `<div class="story">${story}</div>` : '<p class="empty" style="margin:0">Les mots du matin et du soir apparaîtront ici.</p>'}</div>
@@ -58,6 +58,7 @@ export function renderSemaine() {
 }
 
 export function bindSemaine(v) {
+  v.querySelector('#sBack')?.addEventListener('click', () => go('synthese'));
   v.querySelectorAll('[data-goday]').forEach(b => b.onclick = () => go('journee', { selDate: b.dataset.goday }));
   v.querySelectorAll('[data-wk]').forEach(b => b.onclick = () => { app.weekStart = addDays(app.weekStart, 7 * +b.dataset.wk); render(); });
 }

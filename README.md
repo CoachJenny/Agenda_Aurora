@@ -7,6 +7,7 @@ C'est une appli web installable (PWA) : elle s'ouvre depuis l'écran d'accueil d
 
 ## Ce que fait l'appli
 
+- **Navigation** : 4 onglets (Aujourd'hui, Planifier, Ma journée, Synthèse). L'appli s'ouvre au bon endroit : le matin s'il n'a pas été fait, le soir après l'heure choisie (rappel quotidien à ajouter au calendrier), sinon l'accueil avec le check-in en avant.
 - **Accueil** : guide vers l'étape qui correspond au moment (planifier la semaine, ouvrir la journée, check-in, ma journée vécue, clore la journée, récap).
 - **Mon Aurora** (guide de personnalisation) : une question à la fois (prénom, enfants, sport, activités à horaires fixes, catégories, priorités, moments bien-être), puis une conclusion à vérifier. Garde partagée possible : semaines A et B, matins et soirs avec les enfants. Les moments fixes se posent automatiquement dans le plan chaque semaine, et ceux avec les enfants seulement les jours de garde. Raccourcis toujours visibles (accueil, Planifier, fenêtre d'un bloc) pour modifier directement ses catégories, ses moments fixes ou sa garde.
 - **Planifier** : le plan seul. Blocs étiquetés par thématique, déplaçables et redimensionnables au doigt, fixes ou flexibles ; priorités de la semaine et du jour ; checklist avant de planifier. Une fois la journée commencée, son plan est figé pour comparer.
@@ -14,6 +15,7 @@ C'est une appli web installable (PWA) : elle s'ouvre depuis l'écran d'accueil d
 - **Check-in** : six curseurs exprimés en mots, moment fort, échanges avec quelqu'un, « mon corps en ce moment ».
 - **Flow, procrastination, bien-être** : trois boutons toujours accessibles, sur le moment ou après coup.
 - **Matin · Soir** : mot d'ouverture, nuit, priorités, puis le plan se fige ; le soir, la journée en image où chaque bloc se qualifie (fait, en partie, pas fait, remplacé, vrais horaires), relance depuis le dernier check-in, priorités tenues, mot de clôture, debrief libre.
+- **Synthèse** : un premier regard en quatre cartes (priorités tenues sur trois semaines, prévu → réel, bien-être, flow), puis Ma semaine jour par jour et Mon journal (tendances sur 4 ou 12 semaines : priorités, écarts de planning, ce qui a pris la place, bien-être, énergie et flow selon le moment de la journée).
 - **Ma semaine** : l'histoire en mots, les chiffres clés, les rubans d'énergie et d'émotion jour par jour ; chaque jour s'ouvre dans Ma journée pour revoir le prévu et le réel. L'outil montre, il n'interprète pas.
 
 Les données restent pour l'instant **sur le téléphone** (stockage du navigateur). Les réglages permettent de télécharger et de restaurer une sauvegarde.

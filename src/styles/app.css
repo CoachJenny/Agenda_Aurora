@@ -326,3 +326,55 @@ body.in-guide .pulse{display:none}
 nav.tabs .in{grid-template-columns:repeat(4,minmax(0,1fr))}
 nav.tabs button{font-size:11.5px}
 .prio.empty .meta{color:var(--ivory-3)}
+
+/* --- v0.9 : Synthèse, journal, Ma journée allégée --- */
+.syn{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.syncard{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;color:var(--ivory);cursor:pointer;min-width:0}
+.syncard.hero{grid-column:1/-1;border-color:rgb(255 230 109 / .45);background:linear-gradient(135deg,rgb(255 230 109 / .1),rgb(155 111 207 / .08) 60%,var(--surface))}
+.syncard .k{font-size:12px;color:var(--ivory-2)}
+.syncard.hero .k{color:var(--gold)}
+.syncard.wbc .k{color:var(--turq)}
+.syncard.flc .k{color:var(--coral)}
+.syncard .v{font-family:var(--display);font-size:30px;font-weight:500;line-height:1.05;font-variant-numeric:tabular-nums}
+.syncard.hero .v{font-size:40px}
+.syncard .v .of{font-size:15px;color:var(--ivory-2);font-family:var(--body)}
+.syncard .s{margin:0;font-size:13px;color:var(--ivory-2)}
+.syncard .s b{color:var(--gold);font-weight:600}
+.syncard .more{font-size:12px;color:var(--gold);margin-top:auto}
+.biglink{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;color:var(--ivory);cursor:pointer}
+.biglink b{font-weight:600}
+.jhead{font-size:14px;color:var(--ivory-2);margin:0 0 10px}
+.jhead b{color:var(--ivory);font-weight:600}
+.muted{color:var(--ivory-3)}
+.brow{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:10px;align-items:center;font-size:13px;padding:4px 0}
+.brow .bl{color:var(--ivory-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px}
+.brow .bl .dot{flex:none}
+.brow .bt{position:relative;display:flex;gap:2px;height:12px;border-radius:4px;background:var(--surface-2);overflow:hidden}
+.brow .bf{display:block;height:100%;border-radius:4px}
+.brow .bv{font-variant-numeric:tabular-nums;color:var(--ivory);min-width:56px;text-align:right;font-size:12.5px}
+.brow.div .bt{display:block}
+.brow.div .bf{position:absolute;top:0}
+.brow.div .bt.center::after{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--ivory-3)}
+.tex{background:repeating-linear-gradient(135deg,#AD8826 0 3px,rgb(173 136 38 / .35) 3px 6px)}
+.legend2{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ivory-2);margin:0 0 8px}
+.legend2 i{display:inline-block;width:12px;height:8px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.legend2 b{color:var(--ivory);font-weight:600}
+.stackbar{display:flex;gap:2px;height:16px;border-radius:5px;overflow:hidden;margin:4px 0}
+.stackbar span{display:block;height:100%}
+.etiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.etile{display:flex;flex-direction:column;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;font-size:13px}
+.etile .k{font-size:12px;color:var(--ivory-2);text-transform:capitalize}
+.etile b{font-family:var(--display);font-style:italic;font-weight:500;font-size:18px}
+.sw3{display:block;height:6px;border-radius:999px;margin:2px 0}
+.daysum{display:flex;flex-direction:column;gap:4px;margin-top:14px}
+.daysum p{margin:0;font-size:14px;color:var(--ivory-2)}
+.daysum b{color:var(--ivory);font-weight:600}
+details.fold{margin-top:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+details.fold summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:10px}
+details.fold summary::-webkit-details-marker{display:none}
+details.fold summary::after{content:"⌄";color:var(--ivory-3)}
+details.fold[open] summary::after{content:"⌃"}
+details.fold summary .muted{font-weight:400;font-size:13px;margin-left:auto}
+details.fold .moments{margin-top:10px}
+.syn .syncard:nth-child(2){grid-column:1/-1}
+.etile .k{text-transform:none}
