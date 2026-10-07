@@ -5,7 +5,7 @@ import { app, render, go } from '../app.js';
 import { S, save, uid, replaceRecurring, weekPrios, isKidsRule, ruleHalf } from '../data/store.js';
 import { DEFAULT_THEMES, PALETTE, WEEKDAYS_SHORT, SPORTS, WB_DURATIONS } from '../data/constants.js';
 import { H0, H1, hm, today, mondayOf, addDays, weekDates, weekLabel, DAYS_L, parse } from '../lib/time.js';
-import { esc, toast, timeField, onTime } from '../lib/ui.js';
+import { esc, toast, timeField, onTime, download, eveningIcs } from '../lib/ui.js';
 
 const clone = x => JSON.parse(JSON.stringify(x));
 const KID_PRESETS = [
@@ -34,7 +34,8 @@ export function startGuide(focus = null) {
       rules: clone(S.recurring),
       themes: clone(S.themes),
       prios: [...weekPrios(mondayOf(today()))],
-      wbTags: clone(S.wbTags)
+      wbTags: clone(S.wbTags),
+      eveningHour: S.profile.eveningHour ?? 19 * 60 + 30
     }
   };
   go('guide');
@@ -46,6 +47,7 @@ export function quickLinksHTML() {
     <button type="button" class="chip" data-qg="themes"><span class="dot" style="--c:var(--t-travail)"></span>Mes catégories</button>
     <button type="button" class="chip" data-qg="allFixed">↻ Mes moments fixes</button>
     ${S.profile.custody ? '<button type="button" class="chip" data-qg="custodyGrid">Ma garde A / B</button>' : ''}
+    <button type="button" class="chip" data-qg="soir">☾ Mon point du soir</button>
     <button type="button" class="chip" data-qg="all">Tout mon paramétrage</button></div>`;
 }
 export function bindQuickLinks(v) {
@@ -66,6 +68,7 @@ const STEPS = [
   { id: 'themes' },
   { id: 'prios' },
   { id: 'wb' },
+  { id: 'soir' },
   { id: 'recap' }
 ];
 const visible = d => (app.guide?.focus ? [{ id: app.guide.focus }] : STEPS.filter(s => !s.when || s.when(d)));
@@ -191,6 +194,13 @@ function stepHTML(id, d, g) {
           <select data-wbdur style="flex:1;min-width:0;max-width:96px" aria-label="Durée">${[...new Set([...WB_DURATIONS, t.dur])].sort((a, b) => a - b).map(x => `<option value="${x}" ${x === t.dur ? 'selected' : ''}>${x} min</option>`).join('')}</select>
           <button type="button" class="iconbtn" data-wbdel="${i}" aria-label="Retirer ${esc(t.name)}" style="width:34px;height:34px;flex:none">✕</button></div>`).join('')}</div>
         <div class="row" style="margin-top:12px;flex-wrap:nowrap"><input type="text" id="gWbNew" placeholder="Ex. thé au jardin" style="flex:2;min-width:0"><select id="gWbDur" style="flex:1;min-width:0">${WB_DURATIONS.map(x => `<option value="${x}">${x} min</option>`).join('')}</select><button class="btn small" type="button" id="gWbAdd">Ajouter</button></div>`;
+    case 'soir':
+      return `<h2>À quelle heure veux-tu faire <em>le point du soir</em> ?</h2>
+        <p class="lead">Après cette heure, Aurora t'ouvrira directement sur le bilan de la journée : ce qui a été fait, ton ressenti, ton mot pour sortir.</p>
+        <label class="f">Chaque soir à${timeField('gEve', d.eveningHour, 17 * 60, 23 * 60)}</label>
+        <div class="card stack" style="margin-top:14px"><b style="font-weight:600">Un rappel sur ton téléphone ?</b>
+          <p class="lead" style="margin:0">Aurora ne peut pas sonner toute seule. Touche le bouton : ton téléphone propose d'ajouter un rappel quotidien à ton calendrier, à cette heure-là. Si tu changes l'heure plus tard, supprime l'ancien rappel du calendrier et ajoutes-en un nouveau.</p>
+          <div><button class="btn small" type="button" id="gIcs">Ajouter le rappel à mon calendrier</button></div></div>`;
     case 'recap': {
       const mon = mondayOf(today());
       const count = d.rules.reduce((n, r) => n + weekDates(mon).filter((dd, i) => r.days.includes(i) && dd >= today() && draftApplies(d, r, dd, i)).length, 0);
@@ -206,6 +216,7 @@ function stepHTML(id, d, g) {
         ${sec('Autres moments fixes', 'fixed', `<p class="lead" style="margin:0">${other.length ? other.map(r => `${ruleLine(r)} <span style="color:var(--ivory-3)">(${esc(themeName(d, r.theme))})</span>`).join('<br>') : 'Aucun.'}</p>`)}
         ${sec('Tes catégories', 'themes', `<div class="row">${d.themes.map(t => `<span class="chip" style="cursor:default"><span class="dot" style="--c:var(${t.c})"></span>${esc(t.name)}</span>`).join('')}</div>`)}
         ${sec('Tes priorités', 'prios', `<p class="lead" style="margin:0">${d.prios.length ? d.prios.map(id => esc(themeName(d, id))).join(', ') : 'Pas encore choisies.'}</p>`)}
+        ${sec('Le point du soir', 'soir', `<p class="lead" style="margin:0">Chaque soir à partir de ${hm(d.eveningHour)}.</p>`)}
         ${sec('Tes moments bien-être', 'wb', `<p class="lead" style="margin:0">${esc(d.wbTags.map(t => t.name).join(', ')) || 'Aucun.'}</p>`)}
         </div>
         <div class="card" style="margin-top:12px;border-color:rgb(255 230 109 / .4)"><p class="lead" style="margin:0">${d.rules.length ? `En validant, <b style="color:var(--ivory)">${count} moment${count > 1 ? 's' : ''} fixe${count > 1 ? 's' : ''}</b> ser${count > 1 ? 'ont' : 'a'} posé${count > 1 ? 's' : ''} dans ton agenda d'ici dimanche, puis chaque semaine. Tu pourras toujours les déplacer un par un.` : 'Aucun moment fixe à poser : ton agenda reste libre.'}</p></div>`;
@@ -252,6 +263,12 @@ export function bindGuide(v) {
   q('#gDone')?.addEventListener('click', () => commit(d));
   v.querySelectorAll('[data-jump]').forEach(b => b.onclick = () => { g.step = visible(d).findIndex(s => s.id === b.dataset.jump); rerender(); window.scrollTo(0, 0); });
 
+  // Heure du soir et rappel
+  onTime(v, 'gEve', m => (d.eveningHour = m));
+  q('#gIcs')?.addEventListener('click', () => {
+    download('aurora-point-du-soir.ics', eveningIcs(d.eveningHour, location.href.split('#')[0]), 'text/calendar');
+    toast('Ouvre le fichier pour l\'ajouter à ton calendrier');
+  });
   // Prénom
   q('#gName')?.addEventListener('input', e => (d.name = e.target.value.trim()));
   // Enfants
@@ -369,7 +386,7 @@ function commit(d) {
     .map(r => ({ ...r, title: r.title.trim() || themeName(d, r.theme) }));
   const custody = d.kids === true && d.custodyMode === 'shared' ? d.custody : null;
   const custodyChanged = JSON.stringify(custody) !== JSON.stringify(S.profile.custody || null);
-  S.profile = { done: app.guide?.focus ? S.profile.done : true, name: d.name, kids: d.kids, sports: d.sports, custody };
+  S.profile = { done: app.guide?.focus ? S.profile.done : true, name: d.name, kids: d.kids, sports: d.sports, custody, eveningHour: d.eveningHour };
   S.themes = d.themes.map(t => ({ ...t, name: t.name.trim() || 'Sans nom' }));
   S.wbTags = d.wbTags.map(t => ({ ...t, name: t.name.trim() })).filter(t => t.name);
   S.weekPrios[mondayOf(today())] = d.prios;

@@ -17,7 +17,7 @@ import { renderSemaine, bindSemaine } from './views/semaine.js';
 import { renderPulse, initPulses } from './views/pulses.js';
 import { openSettings } from './views/reglages.js';
 import { renderGuide, bindGuide } from './views/guide.js';
-import { applyRecurring } from './data/store.js';
+import { applyRecurring, landing } from './data/store.js';
 import { mondayOf, addDays } from './lib/time.js';
 
 const VIEWS = {
@@ -27,6 +27,7 @@ const VIEWS = {
   checkin: [renderCheckin, bindCheckin],
   rituels: [renderRituels, bindRituels],
   semaine: [renderSemaine, bindSemaine],
+  synthese: [renderSemaine, bindSemaine],
   guide: [renderGuide, bindGuide]
 };
 
@@ -40,7 +41,8 @@ function render() {
   const [draw, bind] = VIEWS[app.tab] || VIEWS.accueil;
   v.innerHTML = draw();
   bind(v);
-  document.querySelectorAll('nav.tabs [data-tab]').forEach(b => b.setAttribute('aria-current', b.dataset.tab === app.tab));
+  const navTab = { checkin: 'accueil', rituels: 'accueil', guide: 'accueil', semaine: 'synthese', journal: 'synthese' }[app.tab] || app.tab;
+  document.querySelectorAll('nav.tabs [data-tab]').forEach(b => b.setAttribute('aria-current', b.dataset.tab === navTab));
   $('today').textContent = longDate(today());
   renderPulse();
   if ((app.tab === 'plan' || app.tab === 'journee') && lastTab !== app.tab) scrollToNow();
@@ -54,9 +56,25 @@ $('settings').onclick = openSettings;
 initSheet();
 initTimeFields();
 initPulses();
-render();
 
-// Quand on revient sur l'appli un autre jour, on rafraîchit la date et l'accueil.
-document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
+// Ouverture guidée : le matin s'il n'a pas été fait, le soir après l'heure choisie, sinon l'accueil (check-in en avant).
+function openAtRightPlace() {
+  const where = landing();
+  if (where === 'matin') Object.assign(app, { tab: 'rituels', ritMode: 'matin' });
+  else if (where === 'soir') Object.assign(app, { tab: 'rituels', ritMode: 'soir' });
+  else app.tab = 'accueil';
+  render();
+  window.scrollTo(0, 0);
+}
+openAtRightPlace();
+
+// Quand on revient après un moment (ou un autre jour), on rouvre au bon endroit ; sinon on rafraîchit simplement.
+let hiddenAt = 0, hiddenDay = today();
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { hiddenAt = Date.now(); hiddenDay = today(); return; }
+  const away = Date.now() - hiddenAt > 20 * 60 * 1000 || hiddenDay !== today();
+  if (away && app.tab !== 'guide' && $('sheetWrap').hidden) openAtRightPlace();
+  else render();
+});
 
 registerSW({ immediate: true });

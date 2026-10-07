@@ -75,6 +75,17 @@ const FALLBACK = { id: 'autre', name: 'Autre', c: '--t-maison' };
 export const themes = () => S.themes;
 export const theme = id => S.themes.find(t => t.id === id) || DEFAULT_THEMES.find(t => t.id === id) || FALLBACK;
 
+// ---------- Le point du soir ----------
+export const eveningHour = () => S.profile.eveningHour ?? 19 * 60 + 30;
+// Où ouvrir l'appli selon le moment : le matin s'il n'a pas été fait, le soir après l'heure choisie, sinon l'accueil.
+export function landing() {
+  if (!hasAnyData()) return 'accueil';
+  const d = today(), r = S.rituals[d] || {}, m = nowMin();
+  if (m >= eveningHour()) return r.close || r.prio ? 'accueil' : 'soir';
+  if (!r.open && !isLocked(d)) return 'matin';
+  return 'accueil';
+}
+
 // ---------- Garde partagée : semaines A et B, matins et soirs avec les enfants ----------
 export function weekType(monday) {
   const c = S.profile.custody;

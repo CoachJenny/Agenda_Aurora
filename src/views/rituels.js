@@ -7,6 +7,7 @@ import { hm, nowMin, today, H0 } from '../lib/time.js';
 import { esc, toast } from '../lib/ui.js';
 import { prioMirror, bindPrio, planDiffs, diffsHTML } from './shared.js';
 import { timelineHTML, bindTimeline, editBlock } from './timeline.js';
+import { eveningHour } from '../data/store.js';
 import { newDraft } from './checkin.js';
 
 export function renderRituels() {
@@ -16,10 +17,16 @@ export function renderRituels() {
     h += `<h2>Ouvrir <em>la journée</em></h2><div class="card stack">
      <label class="f">Un mot pour entrer dans cette journée<input type="text" id="mOpen" value="${esc(r.open || '')}" placeholder="un seul mot" style="font-family:var(--display);font-style:italic;font-size:18px"></label></div>
      <h3>La nuit</h3><div class="card"><div class="row">${SLEEP.map((t, i) => `<button type="button" class="chip" data-sl="${i + 1}" aria-pressed="${r.sleep === i + 1}">${t}</button>`).join('')}</div></div>
+     <h3>Ton plan du jour</h3>
+     ${isLocked(today())
+       ? `<p class="lead" style="margin:0 0 10px">Ton plan du jour est déjà figé. Ce qui change se note dans Ma journée.</p>${timelineHTML(today(), 'plan', { compact: true })}`
+       : planBlocks(today()).length
+         ? `<p class="lead" style="margin:0 0 10px">Un dernier coup d'œil : déplace, étire ou ajoute ce qu'il faut, puis valide.</p>${timelineHTML(today(), 'plan', { compact: true })}<div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn ghost small" type="button" id="mAdd">+ Bloc</button></div>`
+         : `<div class="card"><p class="lead" style="margin:0">Rien n'est prévu aujourd'hui. Tu peux ajouter un bloc, ou partir comme ça.</p><div style="margin-top:10px"><button class="btn ghost small" type="button" id="mAdd">+ Bloc</button></div></div>`}
      <h3>Priorités du jour</h3>${prioMirror('jour', today())}
-     <div class="card" style="margin-top:10px"><label class="row"><input type="checkbox" id="mAg" ${r.agenda ? 'checked' : ''}> Agenda vérifié</label></div>
-     <p class="lead" style="margin:14px 0 0">${isLocked(today()) ? 'Ton plan du jour est déjà figé.' : 'En validant, ton plan du jour est figé. Ce qui change dans la journée se note dans Ma journée, et ce soir tu compares.'}</p>
-     <button class="btn" type="button" id="mOk" style="margin-top:12px;width:100%">C'est parti</button>`;
+     <div class="card" style="margin-top:10px"><label class="row"><input type="checkbox" id="mAg" ${r.agenda ? 'checked' : ''}> J'ai vérifié mes autres agendas</label></div>
+     <button class="btn" type="button" id="mOk" style="margin-top:16px;width:100%">${isLocked(today()) ? 'Aller à Ma journée' : 'Je valide et je pars'}</button>
+     <p class="lead" style="margin:10px 0 0;font-size:12px;text-align:center">${isLocked(today()) ? '' : 'En validant, ton plan est figé tel quel pour pouvoir comparer ce soir.'}</p>`;
     return h;
   }
   const last = onDate('checkins', today()).sort((a, b) => b.start - a.start)[0];
@@ -57,7 +64,9 @@ export function bindRituels(v) {
     q('#mOpen').oninput = e => { r.open = e.target.value.trim(); save(); };
     q('#mAg').onchange = e => { r.agenda = e.target.checked; save(); };
     bindPrio(v);
-    q('#mOk').onclick = () => { lockDay(today()); save(); toast(r.open ? `Belle entrée : « ${r.open} »` : 'Matin noté'); go('journee', { selDate: today() }); };
+    bindTimeline(v, today());
+    q('#mAdd')?.addEventListener('click', () => { app.selDate = today(); editBlock(null, 'plan'); });
+    q('#mOk').onclick = () => { const was = isLocked(today()); lockDay(today()); save(); if (!was) toast(r.open ? `Belle entrée : « ${r.open} »` : "C'est parti"); go('journee', { selDate: today() }); };
     return;
   }
   bindTimeline(v, today());

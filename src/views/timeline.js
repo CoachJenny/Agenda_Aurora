@@ -44,10 +44,10 @@ function realLine(p) {
   return `prévu ${hm(p.start)}–${hm(p.end)} · réel ${hm(r.start)}–${hm(r.end)}`;
 }
 
-export function timelineHTML(date, mode) {
+export function timelineHTML(date, mode, opts = {}) {
   const locked = isLocked(date), plan = planBlocks(date), real = realBlocks(date);
   let from = H0, to = H1;
-  if (mode === 'review') {
+  if (mode === 'review' || opts.compact) {
     const all = [...plan, ...real];
     if (all.length) {
       from = Math.max(H0, Math.floor(Math.min(...all.map(b => b.start)) / 60));

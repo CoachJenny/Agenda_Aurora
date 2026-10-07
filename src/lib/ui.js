@@ -72,6 +72,17 @@ const scale = stops => v => {
 export const energyCol = scale(['#1C1747', '#6B3FA0', '#B0558A', '#FF6B6B', '#FFE66D']);
 export const emoCol = scale(['#2E2B4E', '#6B3FA0', '#9B6FCF', '#FF6B6B']);
 
+// Rappel quotidien à ajouter au calendrier du téléphone (fichier .ics, sans serveur)
+export function eveningIcs(minutes, appUrl) {
+  const p = n => String(n).padStart(2, '0');
+  const d = new Date(), ymd = `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}`;
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Nahara//Aurora//FR', 'CALSCALE:GREGORIAN', 'BEGIN:VEVENT',
+    `UID:aurora-soir-${Date.now()}@nahara`, `DTSTAMP:${stamp}`, `DTSTART:${ymd}T${p(Math.floor(minutes / 60))}${p(minutes % 60)}00`, 'DURATION:PT5M', 'RRULE:FREQ=DAILY',
+    'SUMMARY:Aurora · le point du soir', `DESCRIPTION:Trois minutes pour clore la journée. ${appUrl}`, `URL:${appUrl}`,
+    'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:Aurora · le point du soir', 'TRIGGER:PT0M', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+}
+
 export function download(filename, text, type = 'application/json') {
   const url = URL.createObjectURL(new Blob([text], { type }));
   const a = document.createElement('a');

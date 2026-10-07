@@ -1,6 +1,6 @@
 // Check-in : où j'en suis, à un moment ou sur une plage de la journée.
 
-import { app, render } from '../app.js';
+import { app, render, go } from '../app.js';
 import { S, save, uid, onDate, bodyOn } from '../data/store.js';
 import { SLIDERS, BODY, SOCIAL, wordOf, sliderName } from '../data/constants.js';
 import { hm, nowMin, today, r15, addDays } from '../lib/time.js';
@@ -86,7 +86,7 @@ export function bindCheckin(v) {
     if (!Object.keys(d.values).length && !d.event.trim() && !d.social.modes.length) { toast('Bouge au moins un curseur, ou note un moment'); return; }
     const start = d.when === 'now' ? nowMin() : d.start;
     S.checkins.push({ id: uid(), date: today(), start, end: d.when === 'plage' ? d.end : null, values: { ...d.values }, notes: { ...d.notes }, event: d.event.trim(), social: { modes: [...d.social.modes], note: d.social.note.trim() }, estimated: false });
-    save(); app.draft = null; render(); toast('Check-in noté à ' + hm(start));
+    save(); app.draft = null; toast('Check-in noté à ' + hm(start)); go('journee', { selDate: today() });
   };
   q('#cBody').onclick = editBody;
   q('#retro').onclick = () => pulseSheet(null, true);

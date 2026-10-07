@@ -1,7 +1,7 @@
 // Accueil : guide vers l'étape qui correspond au moment.
 
 import { go } from '../app.js';
-import { S, onDate, ritual, weekPrios, hasAnyData, loadSample, effectiveBlocks } from '../data/store.js';
+import { S, onDate, ritual, weekPrios, hasAnyData, loadSample, effectiveBlocks, eveningHour } from '../data/store.js';
 import { nowMin, today, mondayOf, weekday } from '../lib/time.js';
 import { esc, toast } from '../lib/ui.js';
 import { render } from '../app.js';
@@ -34,7 +34,7 @@ export function renderAccueil() {
   let rec;
   if ((wd === 6 && m >= 15 * 60) || (wd === 0 && m < 10 * 60 && !r.open) || !prios.length) rec = 'semaine';
   else if (m < 11 * 60 && !r.open) rec = 'matin';
-  else if (m >= 19 * 60 && !closed) rec = 'soir';
+  else if (m >= eveningHour() && !closed) rec = 'soir';
   else rec = 'checkin';
   const steps = [
     { k: 'semaine', grp: 'Ma semaine', ic: '◇', hue: 'var(--violet)', t: 'Planifier ma semaine', ss: 'Priorités, checklist, blocs · 10 min', st: prios.length ? `${prios.length} priorité${prios.length > 1 ? 's' : ''}` : 'à faire', ok: !!prios.length },

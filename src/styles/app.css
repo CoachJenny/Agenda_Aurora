@@ -321,3 +321,8 @@ body.in-guide .pulse{display:none}
 .tdot{cursor:pointer}
 .swatches{grid-template-columns:repeat(5,38px);justify-content:space-between}
 .swatches .sw{width:38px;height:38px}
+
+/* --- v0.8 : 4 onglets --- */
+nav.tabs .in{grid-template-columns:repeat(4,minmax(0,1fr))}
+nav.tabs button{font-size:11.5px}
+.prio.empty .meta{color:var(--ivory-3)}
