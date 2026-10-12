@@ -223,7 +223,7 @@ body{padding-top:env(safe-area-inset-top,0px)}
 
 /* --- v0.2 : champs d'heure, durée des blocs, prévu / réel, ce qui a compté --- */
 .tf{display:block}
-.block .rs{position:absolute;left:0;right:0;bottom:0;height:14px;cursor:ns-resize;display:flex;align-items:center;justify-content:center}
+.block .rs{position:absolute;left:0;right:0;bottom:0;height:16px;touch-action:none;cursor:ns-resize;display:flex;align-items:center;justify-content:center}
 .block .rs::after{content:"";width:24px;height:3px;border-radius:2px;background:color-mix(in srgb,var(--c) 75%,transparent)}
 .block .stb{position:absolute;right:7px;top:4px;font-size:12px;font-weight:600}
 .timeline.cmp{--gut:44px;--rib:22px;--pw:calc((100% - var(--gut) - var(--rib) - 6px) * .42)}

@@ -50,7 +50,7 @@ function blockHTML(b, { y, cls, interactive, sub, lane = [0, 1] }) {
     aria-label="${esc(b.title)}, ${hm(b.start)} à ${hm(b.end)}${st ? ', ' + st[1] : ''}" style="--c:var(${theme(b.theme).c});--li:${lane[0]};--ln:${lane[1]};top:${top + 1}px;height:${ht}px">
     ${st ? `<span class="stb" title="${st[1]}">${st[0]}</span>` : b.fixed && interactive ? '<span class="lk" title="Bloc fixe">fixe</span>' : ''}
     <div class="t">${b.theme === 'bienetre' ? '❀ ' : b.task ? '☐ ' : ''}${label}</div>${ht > 36 ? `<div class="n">${line}</div>` : ''}
-    ${interactive && !b.fixed && ht >= 40 ? '<span class="rs" aria-hidden="true"></span>' : ''}</div>`;
+    ${interactive && !b.fixed && ht >= 26 ? '<span class="rs" aria-hidden="true"></span>' : ''}</div>`;
 }
 
 // Le réel d'un bloc prévu, en une ligne : utile dans la revue du soir
@@ -152,6 +152,36 @@ export const drag = { active: false };
 let justDragged = false;
 if (typeof document !== 'undefined') document.addEventListener('touchmove', e => { if (drag.active) e.preventDefault(); }, { passive: false });
 
+// Pincer un bloc à deux doigts (écarter ou rapprocher verticalement) : sa durée suit, par pas de 5 minutes.
+let pinch = null;
+if (typeof document !== 'undefined') {
+  document.addEventListener('gesturestart', e => { if (pinch) e.preventDefault(); });
+  document.addEventListener('touchstart', e => {
+    if (e.touches.length !== 2 || app.placing) return;
+    const el = [...e.touches].map(t => t.target.closest && t.target.closest('.block[data-edit]')).find(Boolean);
+    const b = el && S.blocks.find(x => x.id === el.dataset.id);
+    if (!b || b.fixed) return;
+    pinch = { el, b, d0: Math.abs(e.touches[1].clientY - e.touches[0].clientY), e0: b.end, ne: b.end };
+    drag.active = true; el.classList.add('lifted');
+    navigator.vibrate?.(12);
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    if (!pinch || e.touches.length < 2) return;
+    const { el, b } = pinch;
+    const d = Math.abs(e.touches[1].clientY - e.touches[0].clientY);
+    const ne = Math.max(b.start + 5, Math.min(H1 * 60, Math.round((pinch.e0 + (d - pinch.d0) / PXM) / 5) * 5));
+    pinch.ne = ne;
+    el.style.height = Math.max(MINH - 2, (ne - b.start) * PXM - 3) + 'px';
+    const n = el.querySelector('.n'); if (n) n.textContent = `${hm(b.start)}–${hm(ne)} · ${dur(ne - b.start)}`;
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (!pinch || e.touches.length >= 2) return;
+    const { el, b, ne } = pinch; pinch = null; drag.active = false; el.classList.remove('lifted');
+    justDragged = true; setTimeout(() => (justDragged = false), 400);
+    if (ne !== b.end) { b.end = ne; save(); render(); toast(`${b.title} : ${hm(b.start)}–${hm(ne)} (${dur(ne - b.start)})`); }
+  });
+}
+
 function bindDrag(v) {
   v.querySelectorAll('[data-edit]').forEach(el => {
     const b = S.blocks.find(x => x.id === el.dataset.id);
@@ -161,12 +191,13 @@ function bindDrag(v) {
       if (e.button > 0 || app.placing) return;
       st = { x: e.clientX, y: e.clientY, s0: b.start, e0: b.end, mode: e.target.closest('.rs') ? 'resize' : 'move', armed: false, moved: false, scroll: false, pid: e.pointerId };
       const arm = () => {
-        if (!st || st.scroll) return;
+        if (!st || st.scroll || pinch) return;
         st.armed = true; drag.active = true; el.classList.add('lifted');
         try { el.setPointerCapture(st.pid); } catch (err) { /* rien */ }
         navigator.vibrate?.(12);
       };
-      if (e.pointerType === 'mouse') arm(); else st.timer = setTimeout(arm, LONG);
+      // La poignée du bas réagit tout de suite (elle ne sert qu'à ça) ; le reste du bloc demande un appui long
+      if (e.pointerType === 'mouse' || st.mode === 'resize') arm(); else st.timer = setTimeout(arm, LONG);
     });
     el.addEventListener('pointermove', e => {
       if (!st) return;

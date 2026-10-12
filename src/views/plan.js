@@ -43,7 +43,7 @@ export function renderPlan() {
       <div><button class="btn small" type="button" id="toJournee">Ouvrir Ma journée</button></div></div>`;
   }
   h += placebarHTML() + timelineHTML(date, 'plan');
-  if (!locked) h += `<div class="row" style="margin-top:12px;justify-content:space-between"><span class="lead" style="margin:0">Touche un créneau vide pour ajouter. Appui long sur un bloc pour le déplacer, ou sur son bas pour la durée.</span><button class="btn small" type="button" data-act="add">+ Bloc</button></div>`;
+  if (!locked) h += `<div class="row" style="margin-top:12px;justify-content:space-between"><span class="lead" style="margin:0">Touche un créneau vide pour ajouter. Appui long sur un bloc pour le déplacer ; pour la durée, tire son bas ou pince-le à deux doigts.</span><button class="btn small" type="button" data-act="add">+ Bloc</button></div>`;
   h += tasksHTML();
   h += `<h3>Mon paramétrage</h3>${quickLinksHTML()}`;
   return h;

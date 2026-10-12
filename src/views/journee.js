@@ -24,7 +24,7 @@ export function renderJournee() {
     const bd = bodyOn(date);
     if (bd) h += `<div class="bodyctx" style="margin-bottom:10px"><span class="dot" style="--c:var(--t-enfants)"></span>Mon corps en ce moment : ${esc(bd.tag)}</div>`;
     h += placebarHTML() + timelineHTML(date, 'cmp');
-    h += `<div class="row" style="margin-top:12px;justify-content:space-between"><span class="lead" style="margin:0">Touche un créneau vide du réel pour ajouter. Appui long pour déplacer ou étirer.</span><button class="btn small" type="button" data-act="add">+ Réel</button></div>
+    h += `<div class="row" style="margin-top:12px;justify-content:space-between"><span class="lead" style="margin:0">Touche un créneau vide du réel pour ajouter. Appui long pour déplacer ; tire le bas ou pince à deux doigts pour la durée.</span><button class="btn small" type="button" data-act="add">+ Réel</button></div>
       <p class="lead" style="margin:10px 0 0;font-size:12px">Au milieu, ton énergie, de <span style="color:#9B6FCF">vidée</span> à <span style="color:#FFE66D">pleine d'élan</span>. Touche un bloc prévu pour dire s'il a été fait et combien de temps il a pris.</p>`;
   }
   // Un résumé de trois lignes ; le détail se déplie à la demande.
